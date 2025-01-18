@@ -3,7 +3,7 @@ import React from 'react';
 import './App.css';
 import { CardsInPlay, Hand, PlayingCard } from './components/PlayingCard';
 import { PlayerArea, PlayerAreaProps } from './components/PlayerArea';
-import { GameState, Game } from 'cribbage-core/src/types';
+import { GameEvent, GameState } from 'cribbage-core/src/types';
 function App() {
 
   // store the current user's name and username in state
@@ -12,9 +12,9 @@ function App() {
   const [phase, setPhase] = React.useState('Pegging');
 
   // store recentGameEvent in state (GameState type)
-  const [recentGameEvent, setRecentGameEvent] = React.useState<GameState>();
+  const [recentGameEvent, setRecentGameEvent] = React.useState<GameEvent>();
   // store gameState in state (Game type)
-  const [gameState, setGameState] = React.useState<Game>();
+  const [gameState, setGameState] = React.useState<GameState>();
 
   const yourPlayerAreaProps: PlayerAreaProps = {
     name,

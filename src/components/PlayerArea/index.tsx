@@ -8,10 +8,10 @@
 
 import React from 'react';
 import { CardsInPlay, Hand, PlayingCard } from '../PlayingCard';
-import { Card, Game } from 'cribbage-core/src/types';
+import { Card, GameState } from 'cribbage-core/src/types';
 import './style.css';
 
-export function parsePlayerAreaPropsFromGameState(game: Game, targetPlayerID: string, loggedInUserID: string): PlayerAreaProps {
+export function parsePlayerAreaPropsFromGameState(game: GameState, targetPlayerID: string, loggedInUserID: string): PlayerAreaProps {
   const player = game.players.find(player => player.id === targetPlayerID);
   if (!player) {
     throw new Error('Player not found in game');
