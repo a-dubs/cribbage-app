@@ -1,20 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 // import logo from './logo.svg';
 import './App.css';
-import { CardsInPlay, Hand, PlayingCard } from './components/PlayingCard';
 import { PlayerArea, PlayerAreaProps } from './components/PlayerArea';
-import { GameEvent, GameState } from 'cribbage-core/src/types';
+// import { GameEvent, GameState } from 'cribbage-core/src/types';
+import useWebSocket from './hooks/useWebSocket';
+
 function App() {
 
   // store the current user's name and username in state
-  const [name, setName] = React.useState('Developer');
-  const [username, setUsername] = React.useState('dev-1');
-  const [phase, setPhase] = React.useState('Pegging');
+  const [name, setName] = useState('Developer');
+  const [username, setUsername] = useState('dev-1');
 
-  // store recentGameEvent in state (GameState type)
-  const [recentGameEvent, setRecentGameEvent] = React.useState<GameEvent>();
-  // store gameState in state (Game type)
-  const [gameState, setGameState] = React.useState<GameState>();
+  const { gameState, login, startGame } = useWebSocket();
 
   const yourPlayerAreaProps: PlayerAreaProps = {
     name,
@@ -34,7 +31,7 @@ function App() {
     playedCards: ["QUEEN_HEARTS", "JACK_DIAMONDS"]
   };
 
-  const [showForm, setShowForm] = React.useState(false);
+  const [showForm, setShowForm] = useState(name === '' || username === '');
 
   // create person icon for user to change their name
   // when clicked, bring up simple form with two text inputs and a submit button
@@ -81,13 +78,14 @@ function App() {
       {showForm ? userSettingsFormElement : userSettingsIconElement}
     </div>
   );
-  
 
-
+  const capitalize = (s: string) => {
+    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  }
 
   return (
     <div className="App has-background-grey-dark">
-      <div className="has-text-left is-size-2 has-text-white px-4 py-1">{phase}</div>
+      <div className="has-text-left is-size-2 has-text-white px-4 py-1">{capitalize(gameState?.currentPhase ?? '')}</div>
       {userSettingsElement}
       <PlayerArea {...yourPlayerAreaProps} />
       <PlayerArea {...opponentPlayerAreaProps} />
