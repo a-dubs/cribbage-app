@@ -1,0 +1,26 @@
+.player-area.you {
+    position: fixed;
+    bottom: 10px;
+}
+.player-area.opponent {
+    position: fixed;
+    top: 10px;
+}
+.player-area {
+    width: 100%;
+    height: auto;
+    left:0;
+    position: relative;
+}
+.player-area .player-info {
+    position: absolute;
+    right: 20px;
+    width: 200px;
+    border-radius: 10px;
+}
+.player-area.you .player-info {
+    bottom: 10px;
+}
+.player-area.opponent .player-info {
+    top: 10px;
+}
