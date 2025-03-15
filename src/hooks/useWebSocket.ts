@@ -135,7 +135,7 @@ const useWebSocket = (playerId: string, playerName: string) => {
     socket.emit('discardResponse', discardResponse);
   };
 
-  const login = (username: string, name: string) => {
+  const login = (name: string, username: string) => {
     if (!socket) {
       console.error('Socket is not connected. Cannot login.');
       return;
