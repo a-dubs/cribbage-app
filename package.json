@@ -6,7 +6,6 @@
     "@testing-library/react": "^16.2.0",
     "bulma": "^1.0.3",
     "cra-template-typescript": "1.2.0",
-    "cribbage-core": "file:../cribbage-core",
     "jest": "^27.5.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

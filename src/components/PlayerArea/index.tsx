@@ -7,7 +7,7 @@
 // otherwise, they can only see their played cards
 
 import React from 'react';
-import { CardsInPlay, Hand, PlayingCard } from '../PlayingCard';
+import { CardsInPlay, Hand } from '../PlayingCard';
 import { Card, GameState } from 'cribbage-core/src/types';
 import './style.css';
 
@@ -33,9 +33,20 @@ export interface PlayerAreaProps {
   isOpponent: boolean;
   hand: Card[];
   playedCards: Card[];
+  selectedCards?: Card[];
+  setSelectedCards?: (cards: Card[]) => void;
 }
 
-export const PlayerArea = ({ name, username, points, isOpponent, hand, playedCards }: PlayerAreaProps) => {
+export const PlayerArea = ({
+  name,
+  username,
+  points,
+  isOpponent,
+  hand,
+  playedCards,
+  selectedCards,
+  setSelectedCards,
+}: PlayerAreaProps) => {
   const playedCardsComponent = (
     <CardsInPlay
       cards={playedCards}
@@ -44,13 +55,14 @@ export const PlayerArea = ({ name, username, points, isOpponent, hand, playedCar
   );
 
   const handComponent = (
-    <CardsInPlay
+    <Hand
       title={isOpponent ? `${name}'s Hand` : 'Your hand'}
       cards={hand}
-      hidden={isOpponent}
-      isHand={true}
+      selectedCards={selectedCards || []}
+      setSelectedCards={setSelectedCards || (() => {})}
     />
-  ); return (
+  );
+  return (
     <div className={`player-area ${isOpponent ? 'opponent' : 'you'}`}>
       {!isOpponent ? (
         <>

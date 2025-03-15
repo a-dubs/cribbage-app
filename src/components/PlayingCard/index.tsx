@@ -34,12 +34,14 @@ function convertCardToImagePath(card: Card) {
   const convertedCardName = cardNameMap[cardName.toLowerCase()] || cardName;
   return `/assets/cards/png/${convertedCardName}_of_${cardSuit.toLowerCase()}.png`;
 }
-export const PlayingCard = ({ card, hidden = false }: { card: Card, hidden?: boolean }) => {
+export const PlayingCard = ({ card, hidden = false, onClick, isSelected }: {
+  card: Card, hidden?: boolean, onClick?: () => void, isSelected?: boolean
+}) => {
   const cardImagePath = hidden ? backOfCardPath : convertCardToImagePath(card);
   const cardImageName = hidden ? backOfCardName : convertCardToImageName(card);
   const id = hidden ? '' : card;
   return (
-    <div className='playing-card'>
+    <div className={`playing-card ${isSelected ? 'selected' : ''}`} onClick={onClick}>
       <img
         className='playing-card-image'
         src={cardImagePath}
@@ -78,6 +80,44 @@ export const CardsInPlay = ({ cards, title, isHand, hidden=false }: CardsInPlayP
       {cards.map((card, index) => (
         <PlayingCard key={index} card={card} hidden={hidden} />
       ))}
+      </div>
+    </div>
+  );
+}
+
+export interface HandProps {
+  cards: Card[];
+  title: string;
+  selectedCards: Card[];
+  setSelectedCards: (cards: Card[]) => void;
+}
+
+export const Hand = ({
+  cards,
+  title,
+  selectedCards,
+  setSelectedCards
+}: HandProps) => {
+  const handleCardClick = (card: Card) => {
+    if (selectedCards.includes(card)) {
+      setSelectedCards(selectedCards.filter(selectedCard => selectedCard !== card));
+    } else {
+      setSelectedCards([...selectedCards, card]);
+    }
+  };
+
+  return (
+    <div className='hand'>
+      <p className='hand-title is-size-4 has-text-light'>{title}</p>
+      <div className='hand-content'>
+        {cards.map((card, index) => (
+          <PlayingCard
+            key={index}
+            card={card}
+            hidden={false}
+            onClick={() => handleCardClick(card)}
+          />
+        ))}
       </div>
     </div>
   );

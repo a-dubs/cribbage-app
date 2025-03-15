@@ -1,94 +1,70 @@
-import React, { useState } from 'react';
-// import logo from './logo.svg';
+import React, { use, useEffect, useState } from 'react';
 import './App.css';
-import { PlayerArea, PlayerAreaProps } from './components/PlayerArea';
-// import { GameEvent, GameState } from 'cribbage-core/src/types';
 import useWebSocket from './hooks/useWebSocket';
+import { PlayerIdAndName } from 'cribbage-core/src/types';
+import HomeScreen from './HomeScreen';
+import GameScreen from './GameScreen';
 
 function App() {
+  // const [name, setName] = useState('Developer');
+  // const [username, setUsername] = useState('dev-1');
+  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [yourPlayerInfo, setYourPlayerInfo] = useState<PlayerIdAndName | null>(null);
+  const [opponentPlayerInfo, setOpponentPlayerInfo] = useState<PlayerIdAndName | null>(null);
+  const { gameState, recentGameEvent, login, startGame, waitingOnPlayerInfo, connectedPlayers, winner, requestedDecisionType, requestedDecisionData, makeMove, discard } = useWebSocket(username, name);
 
-  // store the current user's name and username in state
-  const [name, setName] = useState('Developer');
-  const [username, setUsername] = useState('dev-1');
+  useEffect(() => {
+    if (connectedPlayers) {
+      const yourPlayerInfo = connectedPlayers.find(player => player.id === username);
+      const opponentPlayerInfo = connectedPlayers.find(player => player.id !== username);
+      if (!yourPlayerInfo || !opponentPlayerInfo) {
+        console.log('Your player info or opponent player info not found');
+        return;
+      }
+      setYourPlayerInfo(yourPlayerInfo);
+      setOpponentPlayerInfo(opponentPlayerInfo);
+    }
+  }, [connectedPlayers, username]);
 
-  const { gameState, login, startGame } = useWebSocket();
+  useEffect(() => {
+    if (formSubmitted) {
+      login(name, username);
+      setFormSubmitted(false);
+    }
+  }, [formSubmitted, login, name, username]);
 
-  const yourPlayerAreaProps: PlayerAreaProps = {
-    name,
-    username,
-    points: 12,
-    isOpponent: false,
-    hand: ["FIVE_CLUBS", "SIX_SPADES", "FIVE_HEARTS"],
-    playedCards: ["FOUR_SPADES"],
+  const handleFormSubmit = (formName: string, formUsername: string) => {
+    setName(formName);
+    setUsername(formUsername);
+    setFormSubmitted(true);
   };
-
-  const opponentPlayerAreaProps: PlayerAreaProps = {
-    name: 'Opponent',
-    username: 'opponent-1',
-    points: 8,
-    isOpponent: true,
-    hand: ["ACE_CLUBS", "KING_SPADES"],
-    playedCards: ["QUEEN_HEARTS", "JACK_DIAMONDS"]
-  };
-
-  const [showForm, setShowForm] = useState(name === '' || username === '');
-
-  // create person icon for user to change their name
-  // when clicked, bring up simple form with two text inputs and a submit button
-  // use bulma components for all of this
-  // when the form is submitted, update the name in state
-  const userSettingsIconElement = (
-    <div className='user-settings-icon' onClick={() => setShowForm(true)} style={{ position: 'fixed', bottom: '10px', left: '10px', cursor: 'pointer', zIndex: '1' }}>
-      {/* <i className='fas fa-user has-background-light p-5' /> */}
-      <p>User Settings</p>
-    </div>
-  );
-  const userSettingsFormElement = (
-    <div className={`modal ${showForm ? 'is-active' : ''}`}>
-      <div className="modal-background" onClick={() => setShowForm(false)}></div>
-      <div className="modal-content">
-        <div className='box'>
-          <div className='field'>
-            <label className='label'>Name</label>
-            <div className='control'>
-              <input className='input' type='text' value={name} onChange={e => setName(e.target.value)} />
-            </div>
-          </div>
-          <div className='field'>
-            <label className='label'>Username</label>
-            <div className='control'>
-              <input className='input' type='text' value={username} onChange={e => setUsername(e.target.value)} />
-            </div>
-          </div>
-          <div className='field'>
-            <div className='control'>
-              <button className='button is-primary' onClick={() => setShowForm(false)}>Submit</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <button className="modal-close is-large" aria-label="close" onClick={() => setShowForm(false)}></button>
-    </div>
-  );
-
-  // when the user clicks the user settings icon, show the user settings form
-  // otherwise, show the user settings icon
-  const userSettingsElement = (
-    <div className='user-settings'>
-      {showForm ? userSettingsFormElement : userSettingsIconElement}
-    </div>
-  );
-
-  const capitalize = (s: string) => {
-    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-  }
 
   return (
     <div className="App has-background-grey-dark">
-      <div className="has-text-left is-size-2 has-text-white px-4 py-1">{capitalize(gameState?.currentPhase ?? '')}</div>
-      {userSettingsElement}
-      <PlayerArea {...yourPlayerAreaProps} />
-      <PlayerArea {...opponentPlayerAreaProps} />
+      {yourPlayerInfo && opponentPlayerInfo ? (
+        <GameScreen
+          username={username}
+          gameState={gameState}
+          winner={winner}
+          recentGameEvent={recentGameEvent}
+          handleMakeMove={makeMove}
+          handleDiscard={discard}
+          requestedDecisionType={requestedDecisionType}
+          requestedDecisionData={requestedDecisionData}
+          waitingOnPlayerInfo={waitingOnPlayerInfo}
+          connectedPlayers={connectedPlayers}
+        />
+      ) : (
+        <HomeScreen
+          name={name}
+          username={username}
+          onFormSubmit={handleFormSubmit}
+          handleStartGame={startGame}
+          connectedPlayers={connectedPlayers}
+        />
+      )}
     </div>
   );
 }
