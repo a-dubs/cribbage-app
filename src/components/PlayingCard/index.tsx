@@ -34,9 +34,14 @@ function convertCardToImagePath(card: Card) {
   const convertedCardName = cardNameMap[cardName.toLowerCase()] || cardName;
   return `/assets/cards/png/${convertedCardName}_of_${cardSuit.toLowerCase()}.png`;
 }
-export const PlayingCard = ({ card, hidden = false, onClick, isSelected }: {
-  card: Card, hidden?: boolean, onClick?: () => void, isSelected?: boolean
-}) => {
+
+interface PlayingCardProps {
+  card: Card;
+  hidden: boolean;
+  onClick?: () => void;
+  isSelected?: boolean;
+}
+export const PlayingCard = ({ card, hidden, onClick, isSelected }: PlayingCardProps) => {
   const cardImagePath = hidden ? backOfCardPath : convertCardToImagePath(card);
   const cardImageName = hidden ? backOfCardName : convertCardToImageName(card);
   const id = hidden ? '' : card;
@@ -72,14 +77,14 @@ export interface CardsInPlayProps {
   hidden?: boolean;
 }
 
-export const CardsInPlay = ({ cards, title, isHand, hidden=false }: CardsInPlayProps) => {
+export const CardsInPlay = ({ cards, title, isHand, hidden = false }: CardsInPlayProps) => {
   return (
     <div className={`cards-in-play ${isHand ? 'is-hand' : 'is-played'}`}>
       {title && <p className='cards-in-play-title is-size-4 has-text-light'>{title}</p>}
       <div className='cards-in-play-content'>
-      {cards.map((card, index) => (
-        <PlayingCard key={index} card={card} hidden={hidden} />
-      ))}
+        {cards.map((card, index) => (
+          <PlayingCard key={index} card={card} hidden={hidden} />
+        ))}
       </div>
     </div>
   );
@@ -90,13 +95,15 @@ export interface HandProps {
   title: string;
   selectedCards: Card[];
   setSelectedCards: (cards: Card[]) => void;
+  hidden: boolean;
 }
 
 export const Hand = ({
   cards,
   title,
   selectedCards,
-  setSelectedCards
+  setSelectedCards,
+  hidden,
 }: HandProps) => {
   const handleCardClick = (card: Card) => {
     if (selectedCards.includes(card)) {
@@ -110,14 +117,19 @@ export const Hand = ({
     <div className='hand'>
       <p className='hand-title is-size-4 has-text-light'>{title}</p>
       <div className='hand-content'>
-        {cards.map((card, index) => (
-          <PlayingCard
-            key={index}
-            card={card}
-            hidden={false}
-            onClick={() => handleCardClick(card)}
-          />
-        ))}
+        {
+          cards.map((card, index) => {
+            return (
+              <PlayingCard
+                key={index}
+                card={card}
+                hidden={hidden}
+                onClick={() => handleCardClick(card)}
+                isSelected={selectedCards.includes(card)}
+              />
+            );
+          })
+        }
       </div>
     </div>
   );

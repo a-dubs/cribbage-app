@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import useWebSocket from './hooks/useWebSocket';
 import { PlayerIdAndName } from 'cribbage-core/src/types';
@@ -13,7 +13,20 @@ function App() {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [yourPlayerInfo, setYourPlayerInfo] = useState<PlayerIdAndName | null>(null);
   const [opponentPlayerInfo, setOpponentPlayerInfo] = useState<PlayerIdAndName | null>(null);
-  const { gameState, recentGameEvent, login, startGame, waitingOnPlayerInfo, connectedPlayers, winner, requestedDecisionType, requestedDecisionData, makeMove, discard } = useWebSocket(username, name);
+  const {
+    gameState,
+    recentGameEvent,
+    login,
+    startGame,
+    waitingOnPlayerInfo,
+    connectedPlayers,
+    winner,
+    requestedDecisionType,
+    requestedDecisionData,
+    makeMove,
+    discard,
+    numberOfCardsToSelect,
+  } = useWebSocket(username, name);
 
   useEffect(() => {
     if (connectedPlayers) {
@@ -36,6 +49,7 @@ function App() {
   }, [formSubmitted, login, name, username]);
 
   const handleFormSubmit = (formName: string, formUsername: string) => {
+    console.log('Form submitted:', formName, formUsername);
     setName(formName);
     setUsername(formUsername);
     setFormSubmitted(true);
@@ -55,6 +69,7 @@ function App() {
           requestedDecisionData={requestedDecisionData}
           waitingOnPlayerInfo={waitingOnPlayerInfo}
           connectedPlayers={connectedPlayers}
+          numberOfCardsToSelect={numberOfCardsToSelect || 0}
         />
       ) : (
         <HomeScreen

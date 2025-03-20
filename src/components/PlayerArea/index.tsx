@@ -8,21 +8,32 @@
 
 import React from 'react';
 import { CardsInPlay, Hand } from '../PlayingCard';
-import { Card, GameState } from 'cribbage-core/src/types';
+import { Card, GameState, Phase } from 'cribbage-core/src/types';
 import './style.css';
+import { EmittedDecisionRequest } from 'cribbage-core';
 
-export function parsePlayerAreaPropsFromGameState(game: GameState, targetPlayerID: string, loggedInUserID: string): PlayerAreaProps {
+export function parsePlayerAreaPropsFromGameState(game: GameState, targetPlayerID: string, loggedInUserID: string, requestedDecisionData?: EmittedDecisionRequest): PlayerAreaProps {
   const player = game.players.find(player => player.id === targetPlayerID);
   if (!player) {
     throw new Error('Player not found in game');
+  }
+  let currentHand: Card[];
+  let playedCards: Card[];
+  if (game.currentPhase === Phase.PEGGING) {
+    currentHand = player.peggingHand;
+    playedCards = player.hand.filter(card => !player.peggingHand.includes(card));
+  }
+  else {
+    currentHand = player.hand;
+    playedCards = [];
   }
   return {
     name: player.name,
     username: player.id,
     points: player.score,
     isOpponent: targetPlayerID !== loggedInUserID,
-    hand: player.hand,
-    playedCards: player.peggingHand
+    hand: currentHand,
+    playedCards: playedCards,
   };
 }
 
@@ -59,7 +70,8 @@ export const PlayerArea = ({
       title={isOpponent ? `${name}'s Hand` : 'Your hand'}
       cards={hand}
       selectedCards={selectedCards || []}
-      setSelectedCards={setSelectedCards || (() => {})}
+      setSelectedCards={setSelectedCards || (() => { })}
+      hidden={isOpponent}
     />
   );
   return (

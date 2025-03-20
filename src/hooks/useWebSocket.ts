@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { GameState, GameEvent, EmittedMakeMoveRequest, EmittedDiscardRequest, Card, EmittedWaitingForPlayer, EmittedDiscardResponse, EmittedMakeMoveResponse, PlayerIdAndName, AgentDecisionType, EmittedDecisionRequest } from 'cribbage-core/';
 
@@ -13,22 +13,32 @@ const useWebSocket = (playerId: string, playerName: string) => {
   const [winner, setWinner] = useState<string | null>(null);
   const [requestedDecisionType, setRequestedDecisionType] = useState<AgentDecisionType | null>(null);
   const [requestedDecisionData, setRequestedDecisionData] = useState<EmittedDecisionRequest | null>(null);
+  const [numberOfCardsToSelect, setNumberOfCardsToSelect] = useState<number | null>(null);
+
+  // log when playerId or playerName changes
+  const playerIdRef = useRef(playerId);
+  useEffect(() => {
+    playerIdRef.current = playerId;
+  }, [playerId]);
 
   useEffect(() => {
-
+    let newSocket: Socket;
+    console.log('[useWebSocket.useEffect] Player ID:', playerId);
     if (socket) {
-      console.log('Socket already connected. Skipping connection setup.');
-      return;
+      // console.log('Socket already connected. Skipping connection setup.');
+      console.log('Socket already connected. Updating existing socket.');
+      newSocket = socket;
     }
-
-    console.log('Connecting to server...');
-    const newSocket = io('http://localhost:3002', {
-      // transports: ['websocket'],
-      withCredentials: true,
-      auth: {
-        token: 'dummy-auth-token', // Add dummy auth token
-      },
-    });
+    else {
+      console.log('Connecting to server...');
+      newSocket = io('http://localhost:3002', {
+        // transports: ['websocket'],
+        withCredentials: true,
+        auth: {
+          token: 'dummy-auth-token', // Add dummy auth token
+        },
+      });
+    }
 
     newSocket.on('connect_error', (err) => {
       console.error('Connection error:', err);
@@ -37,7 +47,6 @@ const useWebSocket = (playerId: string, playerName: string) => {
     newSocket.on('connect_timeout', () => {
       console.error('Connection timeout');
     });
-    setSocket(newSocket);
 
     newSocket.on('gameStateChange', (newGameState: GameState) => {
       console.log("Received new game state:", newGameState);
@@ -54,23 +63,27 @@ const useWebSocket = (playerId: string, playerName: string) => {
     });
 
     newSocket.on('requestMakeMove', (data: EmittedMakeMoveRequest) => {
-      // check if the player id matches the current player id, if not log and ignore
-      if (data.playerId !== playerId) {
-        console.error('Received make move request for a different player. Ignoring.');
+      console.log('[socket.requestMakeMove] current player ID:', playerIdRef.current);
+      console.log('Received make move request:', data);
+      if (data.playerId !== playerIdRef.current) {
+        console.error(`Received make move request for ${data.playerId} but expected ${playerIdRef.current}. Ignoring.`);
         return;
       }
       setRequestedDecisionType(AgentDecisionType.PLAY_CARD);
       setRequestedDecisionData(data);
+      setNumberOfCardsToSelect(1);
     });
 
     newSocket.on('discardRequest', (data: EmittedDiscardRequest) => {
-      // check if the player id matches the current player id, if not log and ignore
-      if (data.playerId !== playerId) {
-        console.error('Received discard request for a different player. Ignoring.');
+      console.log('[handleReceivedDiscardRequest] current player ID:', playerIdRef.current);
+      console.log('Received discard request:', data);
+      if (data.playerId !== playerIdRef.current) {
+        console.error(`Received discard request for ${data.playerId} but expected ${playerIdRef.current}. Ignoring.`);
         return;
       }
       setRequestedDecisionType(AgentDecisionType.DISCARD);
       setRequestedDecisionData(data);
+      setNumberOfCardsToSelect(data.numberOfCardsToDiscard);
     });
 
     newSocket.on('disconnect', () => {
@@ -97,26 +110,35 @@ const useWebSocket = (playerId: string, playerName: string) => {
       setConnectedPlayers(players);
     });
 
-    return () => {
-      console.log('Closing socket connection');
-      // newSocket.close();
-    };
-  }, [playerId, playerName, socket]);
+    setSocket(newSocket);
 
-  // send heartbeat to server every 5 seconds
-  useEffect(() => {
-    const heartbeatInterval = setInterval(() => {
-      console.log('Sending heartbeat');
-      socket?.emit('heartbeat');
-    }, 5000);
+    // return () => {
+    //   console.log('Closing socket connection');
+    //   newSocket.close();
+    // };
+  }, [playerId, playerName, socket]); 
 
-    return () => {
-      clearInterval(heartbeatInterval);
-    };
-  }, [socket]);
+  // // send heartbeat to server every 5 seconds
+  // useEffect(() => {
+  //   const heartbeatInterval = setInterval(() => {
+  //     console.log('Sending heartbeat');
+  //     socket?.emit('heartbeat');
+  //   }, 5000);
 
-  const makeMove = (card: Card): void => {
-    console.log('Playing card:', card);
+  //   return () => {
+  //     clearInterval(heartbeatInterval);
+  //   };
+  // }, [socket]);
+
+
+  const makeMove = (card: Card | null): void => {
+    // null = Go/Pass
+    if (!card) {
+      console.log('Passing');
+    }
+    else {
+      console.log('Playing card:', card);
+    }
     const makeMoveResponse: EmittedMakeMoveResponse = { playerId, selectedCard: card };
     if (!socket) {
       console.error('Socket is not connected. Cannot make move.');
@@ -161,7 +183,20 @@ const useWebSocket = (playerId: string, playerName: string) => {
     console.debug(`Socket id: ${socket?.id}`);
   }, [socket]);
 
-  return { gameState, recentGameEvent, login, startGame, waitingOnPlayerInfo, connectedPlayers, winner, requestedDecisionType, requestedDecisionData, makeMove, discard };
+  return {
+    gameState,
+    recentGameEvent,
+    login,
+    startGame,
+    waitingOnPlayerInfo,
+    connectedPlayers,
+    winner,
+    requestedDecisionType,
+    requestedDecisionData,
+    numberOfCardsToSelect,
+    makeMove,
+    discard,
+  };
 };
 
 
