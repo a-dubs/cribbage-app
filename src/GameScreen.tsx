@@ -4,6 +4,7 @@ import { AgentDecisionType, Card, EmittedDecisionRequest, EmittedWaitingForPlaye
 import { parseCard, Phase } from 'cribbage-core';
 // import GameScreen.css
 import './GameScreen.css';
+import { Deck, PlayingCard } from './components/PlayingCard';
 
 interface GameScreenProps {
   username: string;
@@ -41,7 +42,7 @@ const GameScreen: React.FC<GameScreenProps> = ({
 
   const [yourSelectedCards, setYourSelectedCards] = useState<Card[]>([]);
   // const [numberOfCardsToSelect, setNumberOfCardsToSelect] = useState<number>(0);
-  
+
   const [yourPlayerInfo, setYourPlayerInfo] = useState<PlayerIdAndName | null>(null);
   const [opponentPlayerInfo, setOpponentPlayerInfo] = useState<PlayerIdAndName | null>(null);
 
@@ -63,14 +64,14 @@ const GameScreen: React.FC<GameScreenProps> = ({
 
   useEffect(() => {
     if (gameState && opponentPlayerInfo && yourPlayerInfo) {
-      const yourPlayerAreaProps = parsePlayerAreaPropsFromGameState(gameState, yourPlayerInfo.id, yourPlayerInfo.id);
-      const opponentPlayerAreaProps = parsePlayerAreaPropsFromGameState(gameState, opponentPlayerInfo?.id, username);
+      const yourPlayerAreaProps = parsePlayerAreaPropsFromGameState(gameState, yourPlayerInfo.id, yourPlayerInfo.id, requestedDecisionData);
+      const opponentPlayerAreaProps = parsePlayerAreaPropsFromGameState(gameState, opponentPlayerInfo?.id, username, requestedDecisionData);
       setYourPlayerAreaProps(yourPlayerAreaProps);
       setOpponentPlayerAreaProps(opponentPlayerAreaProps);
       // console.log('Your player area props:', yourPlayerAreaProps);
       // console.log('Opponent player area props:', opponentPlayerAreaProps);
     }
-  }, [gameState, opponentPlayerInfo, username, yourPlayerInfo]);
+  }, [gameState, opponentPlayerInfo, requestedDecisionData, username, yourPlayerInfo]);
 
   const capitalize = (s: string) => {
     return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
@@ -162,7 +163,7 @@ const GameScreen: React.FC<GameScreenProps> = ({
       </div>
     );
   });
- 
+
   const handleDoneSelecting = () => {
     if (requestedDecisionType === AgentDecisionType.DISCARD) {
       handleDiscard(yourSelectedCards);
@@ -171,7 +172,7 @@ const GameScreen: React.FC<GameScreenProps> = ({
     }
     setYourSelectedCards([]);
   }
-  
+
   // create element that combines the waiting info and the game phase info
   const gameInfoElement = (() => {
     return (
@@ -208,9 +209,38 @@ const GameScreen: React.FC<GameScreenProps> = ({
     );
   }
 
- 
+  const deckElement = (() => {
+    return (
+      <div
+        className="deck"
+        style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)', width: 'auto' }}
+      >
+        <PlayingCard card={"FIVE_SPADES"} hidden={true} />
+        {
+          gameState.turnCard && (
+            <div
+              style={{ position: 'absolute', top: 0, left: '10px', width: '120px' }}
+            >
+              <PlayingCard card={gameState.turnCard} hidden={false} />
+            </div>
+          )
+        }
+      </div>
+    );
+  });
+
+
   return (
     <div className="GameScreen">
+      <div
+        className="deck"
+        style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)', width: '200px' }}
+      >
+        <Deck
+          stackSize={10}
+          topCard={gameState.turnCard}
+        />
+      </div>
       {gameInfoElement()}
       {
         yourPlayerAreaProps && opponentPlayerAreaProps && (
@@ -224,7 +254,7 @@ const GameScreen: React.FC<GameScreenProps> = ({
             <p className="has-text-left is-size-4 has-text-white px-4 py-1 pegging-total has-text-centered"
               style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
             >
-              { gameState.currentPhase === Phase.PEGGING && `Pegging total: ${calculatePeggingTotal()} / 31`
+              {gameState.currentPhase === Phase.PEGGING && `Pegging total: ${calculatePeggingTotal()} / 31`
               }
             </p>
           </>

@@ -36,17 +36,18 @@ function convertCardToImagePath(card: Card) {
 }
 
 interface PlayingCardProps {
-  card: Card;
+  card: Card | null;
   hidden: boolean;
   onClick?: () => void;
   isSelected?: boolean;
+  isSelectable?: boolean;
 }
-export const PlayingCard = ({ card, hidden, onClick, isSelected }: PlayingCardProps) => {
-  const cardImagePath = hidden ? backOfCardPath : convertCardToImagePath(card);
-  const cardImageName = hidden ? backOfCardName : convertCardToImageName(card);
-  const id = hidden ? '' : card;
+export const PlayingCard = ({ card, hidden, onClick, isSelected, isSelectable }: PlayingCardProps) => {
+  const cardImagePath = hidden || card === null ? backOfCardPath : convertCardToImagePath(card);
+  const cardImageName = hidden || card === null ? backOfCardName : convertCardToImageName(card);
+  const id = hidden || card === null ? backOfCardName : card;
   return (
-    <div className={`playing-card ${isSelected ? 'selected' : ''}`} onClick={onClick}>
+    <div className={`playing-card ${isSelected ? 'selected' : ''} ${isSelectable ? 'selectable' : ''}`} onClick={onClick}>
       <img
         className='playing-card-image'
         src={cardImagePath}
@@ -69,6 +70,8 @@ export const PlayingCard = ({ card, hidden, onClick, isSelected }: PlayingCardPr
 //     </div>
 //   );
 // }
+
+
 
 export interface CardsInPlayProps {
   cards: Card[];
@@ -134,3 +137,125 @@ export const Hand = ({
     </div>
   );
 }
+
+
+export interface CardStackProps {
+  /** Array of elements (cards) to render in the stack */
+  items: React.ReactNode[];
+  /** Horizontal offset (in percentage) between each card. Default is 25 */
+  offset?: number;
+  /** Whether to enable the hover animation. Default is true */
+  hoverAnimation?: boolean;
+}
+
+export const CardStack: React.FC<CardStackProps> = ({
+  items,
+  offset = 30,
+  hoverAnimation = false,
+}) => {
+  return (
+    <div className="card-stack">
+      {items.map((item, index) => (
+        <div
+          key={index}
+          className={`card-stack-item ${hoverAnimation ? 'hover-enabled' : ''}`}
+          style={{
+            left: `${index * offset}px`,
+            zIndex: index, // lower index is at the bottom of the stack
+          }}
+        >
+          {item}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export interface DeckProps {
+  stackSize: number;
+  topCard: Card | null;
+  onClick?: () => void;
+}
+
+// create a deck using the card stack component
+export const Deck: React.FC<DeckProps> = ({ stackSize, topCard, onClick }) => {
+  const deckItems = [];
+  for (let i = 0; i < stackSize; i++) {
+    deckItems.push(
+      <PlayingCard
+        key={i}
+        card={null}
+        hidden={true}
+      />
+    );
+  }
+  if (topCard) {
+    deckItems.push(
+      <PlayingCard
+        key={stackSize}
+        card={topCard}
+        hidden={false}
+        isSelected={false}
+      />
+    );
+  }
+
+  return (
+    <div onClick={onClick}>
+      <CardStack items={deckItems} hoverAnimation={false} offset={3} />
+    </div>
+  );
+}
+
+
+// Stacked Hand component
+export interface StackedHandProps {
+  cards: Card[];
+  title: string;
+  selectedCards: Card[];
+  setSelectedCards: (cards: Card[]) => void;
+  hidden: boolean;
+  stackOffset?: number;
+  hoverAnimation?: boolean;
+  areSelectable?: boolean;
+}
+
+export const StackedHand = ({
+  cards,
+  title,
+  selectedCards,
+  setSelectedCards,
+  hidden,
+  stackOffset,
+  hoverAnimation = false,
+  areSelectable,
+}: StackedHandProps) => {
+  const handleCardClick = (card: Card) => {
+    if (selectedCards.includes(card)) {
+      setSelectedCards(selectedCards.filter(selectedCard => selectedCard !== card));
+    } else {
+      setSelectedCards([...selectedCards, card]);
+    }
+  };
+
+  const items = cards.map((card, index) => (
+    <PlayingCard
+      key={index}
+      card={card}
+      hidden={hidden}
+      onClick={() => handleCardClick(card)}
+      isSelected={selectedCards.includes(card)}
+      isSelectable={areSelectable}
+    />
+  ));
+
+  return (
+    <div className='hand'>
+      <p className='hand-title is-size-4 has-text-light'>{title}</p>
+      <CardStack items={items} offset={stackOffset} hoverAnimation={hoverAnimation} />
+    </div>
+  );
+
+
+}
+

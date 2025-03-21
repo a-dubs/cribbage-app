@@ -7,12 +7,12 @@
 // otherwise, they can only see their played cards
 
 import React from 'react';
-import { CardsInPlay, Hand } from '../PlayingCard';
+import { CardsInPlay, Hand, StackedHand } from '../PlayingCard';
 import { Card, GameState, Phase } from 'cribbage-core/src/types';
 import './style.css';
-import { EmittedDecisionRequest } from 'cribbage-core';
+import { EmittedDecisionRequest, EmittedMakeMoveRequest } from 'cribbage-core';
 
-export function parsePlayerAreaPropsFromGameState(game: GameState, targetPlayerID: string, loggedInUserID: string, requestedDecisionData?: EmittedDecisionRequest): PlayerAreaProps {
+export function parsePlayerAreaPropsFromGameState(game: GameState, targetPlayerID: string, loggedInUserID: string, requestedDecisionData?: EmittedDecisionRequest | null): PlayerAreaProps {
   const player = game.players.find(player => player.id === targetPlayerID);
   if (!player) {
     throw new Error('Player not found in game');
@@ -20,8 +20,17 @@ export function parsePlayerAreaPropsFromGameState(game: GameState, targetPlayerI
   let currentHand: Card[];
   let playedCards: Card[];
   if (game.currentPhase === Phase.PEGGING) {
-    currentHand = player.peggingHand;
-    playedCards = player.hand.filter(card => !player.peggingHand.includes(card));
+    if (!requestedDecisionData) {
+      currentHand = [];
+      playedCards = [];
+      console.error('No requested decision data during pegging phase');
+    } else {
+      const makeMoveData = (requestedDecisionData as EmittedMakeMoveRequest);
+      playedCards = makeMoveData.playedCards
+        .filter(playedCard => playedCard.playerId === targetPlayerID)
+        .map(playedCard => playedCard.card);
+      currentHand = player.hand.filter(card => !playedCards.includes(card));
+    }
   }
   else {
     currentHand = player.hand;
@@ -59,19 +68,31 @@ export const PlayerArea = ({
   setSelectedCards,
 }: PlayerAreaProps) => {
   const playedCardsComponent = (
-    <CardsInPlay
+    <StackedHand
+      title={isOpponent ? `${name}'s Played Cards` : 'Your Played Cards'}
       cards={playedCards}
-      isHand={false}
+      selectedCards={[]}
+      setSelectedCards={() => { }}
+      hidden={false}
     />
   );
 
   const handComponent = (
-    <Hand
+    // <Hand
+    //   title={isOpponent ? `${name}'s Hand` : 'Your hand'}
+    //   cards={hand}
+    //   selectedCards={selectedCards || []}
+    //   setSelectedCards={setSelectedCards || (() => { })}
+    //   hidden={isOpponent}
+    // />
+    <StackedHand
       title={isOpponent ? `${name}'s Hand` : 'Your hand'}
       cards={hand}
       selectedCards={selectedCards || []}
       setSelectedCards={setSelectedCards || (() => { })}
       hidden={isOpponent}
+      hoverAnimation={!isOpponent}
+      areSelectable={!isOpponent}
     />
   );
   return (

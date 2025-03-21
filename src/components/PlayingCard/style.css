@@ -5,13 +5,13 @@
     border-radius: 10px;
     border: 2px solid black;
     padding: 3px 5px 3px 1px;
-    margin: 5px;
+    /* margin: 5px; */
     display: inline-block;
     overflow: hidden;
 }
 .playing-card img {
     width: 100%;
-    height: 8em;
+    height: 6em;
     margin: auto;
     mouse-events: none;
     margin-top: 2px;
@@ -48,7 +48,7 @@ img {
     margin: 10px;
 } */
 .cards-in-play, .hand {
-    width:40%;
+    width:30%;
     margin: 0 auto;
     padding: 10px 0;
 }
@@ -65,6 +65,37 @@ img {
 
 .playing-card.selected {
     border: 2px solid red;
-    margin-top: 5px;
+    margin-top: 0.5em;
     margin-bottom: 5px;
 }
+
+/* Card Stack */
+
+.playing-card {
+    margin-top:1em;
+    transition: margin-top 0.3s ease;
+}
+
+.card-stack {
+    position: relative;
+    width: 100%;
+    height: 7em;
+    display: inline-block;
+    margin-bottom: 1em;
+}
+  
+  /* Each stacked item is absolutely positioned */
+.card-stack-item {
+    position: absolute;
+    top: 0;
+}
+  
+  /* If hover animation is enabled, move the card upward by 25% of its height on hover */
+.card-stack-item.hover-enabled .playing-card:hover {
+    margin-top: 0em;
+}
+
+.playing-card.selectable {
+    cursor: pointer;
+}
+  
