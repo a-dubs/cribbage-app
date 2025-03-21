@@ -10,7 +10,7 @@ import React from 'react';
 import { CardsInPlay, Hand, StackedHand } from '../PlayingCard';
 import { Card, GameState, Phase } from 'cribbage-core/src/types';
 import './style.css';
-import { EmittedDecisionRequest, EmittedMakeMoveRequest } from 'cribbage-core';
+import { AgentDecisionType, EmittedDecisionRequest, EmittedMakeMoveRequest } from 'cribbage-core';
 
 export function parsePlayerAreaPropsFromGameState(game: GameState, targetPlayerID: string, loggedInUserID: string, requestedDecisionData?: EmittedDecisionRequest | null): PlayerAreaProps {
   const player = game.players.find(player => player.id === targetPlayerID);
@@ -20,7 +20,7 @@ export function parsePlayerAreaPropsFromGameState(game: GameState, targetPlayerI
   let currentHand: Card[];
   let playedCards: Card[];
   if (game.currentPhase === Phase.PEGGING) {
-    if (!requestedDecisionData) {
+    if (!requestedDecisionData || requestedDecisionData.requestType !== AgentDecisionType.PLAY_CARD) {
       currentHand = [];
       playedCards = [];
       console.error('No requested decision data during pegging phase');

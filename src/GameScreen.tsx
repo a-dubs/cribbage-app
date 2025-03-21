@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { parsePlayerAreaPropsFromGameState, PlayerArea, PlayerAreaProps } from './components/PlayerArea';
 import { AgentDecisionType, Card, EmittedDecisionRequest, EmittedWaitingForPlayer, GameEvent, GameState, PlayerIdAndName } from 'cribbage-core/src/types';
-import { parseCard, Phase } from 'cribbage-core';
+import { EmittedContinueRequest, parseCard, Phase } from 'cribbage-core';
 // import GameScreen.css
 import './GameScreen.css';
 import { Deck, PlayingCard } from './components/PlayingCard';
@@ -24,6 +24,7 @@ interface GameScreenProps {
   waitingOnPlayerInfo: EmittedWaitingForPlayer | null;
   connectedPlayers: PlayerIdAndName[];
   numberOfCardsToSelect: number;
+  continueGame: () => void;
 }
 
 const GameScreen: React.FC<GameScreenProps> = ({
@@ -38,6 +39,7 @@ const GameScreen: React.FC<GameScreenProps> = ({
   waitingOnPlayerInfo,
   connectedPlayers,
   numberOfCardsToSelect,
+  continueGame,
 }) => {
 
   const [yourSelectedCards, setYourSelectedCards] = useState<Card[]>([]);
@@ -115,6 +117,18 @@ const GameScreen: React.FC<GameScreenProps> = ({
       console.error('Player name not found');
       return null;
     }
+    const description = (requestedDecisionData as EmittedContinueRequest|null)?.description;
+    console.log('Requested decision data:', requestedDecisionData);
+    console.log('Requested decision type:', requestedDecisionType);
+    console.log('Description:', description);
+    const continueButton = (
+      <button
+        className="button continue-button is-primary mx-4 my-3 is-clickable"
+        onClick={continueGame}
+      >
+        {`${description} (continue)`}
+      </button>
+    );
     if (playerName === yourPlayerInfo?.name) {
       return (
         // <div className="has-text-left is-size-4 has-text-white px-4 py-1">
@@ -130,17 +144,21 @@ const GameScreen: React.FC<GameScreenProps> = ({
               && 'Select a card to play'
             }
           </p>
-          <button
-            className="button is-primary mx-4 my-3 is-clickable"
-            onClick={handleDoneSelecting}
-            disabled={yourSelectedCards.length !== numberOfCardsToSelect}
-          >
-            {requestedDecisionType === AgentDecisionType.DISCARD
-              && 'Discard Selected Card' + (numberOfCardsToSelect > 1 ? 's' : '')}
-            {requestedDecisionType === AgentDecisionType.PLAY_CARD
-              && 'Play Selected Card'
-            }
-          </button>
+          {description && continueButton}
+          {!description &&
+            <button
+              className="button is-primary mx-4 my-3 is-clickable"
+              onClick={handleDoneSelecting}
+              disabled={numberOfCardsToSelect > 0 && yourSelectedCards.length !== numberOfCardsToSelect}
+            >
+              {requestedDecisionType === AgentDecisionType.DISCARD
+                && 'Discard Selected Card' + (numberOfCardsToSelect > 1 ? 's' : '')
+              }
+              {requestedDecisionType === AgentDecisionType.PLAY_CARD
+                && 'Play Selected Card'
+              }
+            </button>
+          }
           {
             gameState?.currentPhase === Phase.PEGGING &&
             calculatePeggingTotal() >= 21 &&
@@ -209,32 +227,11 @@ const GameScreen: React.FC<GameScreenProps> = ({
     );
   }
 
-  const deckElement = (() => {
-    return (
-      <div
-        className="deck"
-        style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)', width: 'auto' }}
-      >
-        <PlayingCard card={"FIVE_SPADES"} hidden={true} />
-        {
-          gameState.turnCard && (
-            <div
-              style={{ position: 'absolute', top: 0, left: '10px', width: '120px' }}
-            >
-              <PlayingCard card={gameState.turnCard} hidden={false} />
-            </div>
-          )
-        }
-      </div>
-    );
-  });
-
-
   return (
     <div className="GameScreen">
       <div
         className="deck"
-        style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)', width: '200px' }}
+        style={{ position: 'absolute', top: '50%', left: '25px', transform: 'translateY(-50%)', width: '200px' }}
       >
         <Deck
           stackSize={10}

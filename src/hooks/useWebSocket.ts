@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { GameState, GameEvent, EmittedMakeMoveRequest, EmittedDiscardRequest, Card, EmittedWaitingForPlayer, EmittedDiscardResponse, EmittedMakeMoveResponse, PlayerIdAndName, AgentDecisionType, EmittedDecisionRequest } from 'cribbage-core/';
+import { EmittedContinueResponse } from 'cribbage-core/src/types';
 
 localStorage.debug = 'socket.io-client:socket';
 
@@ -86,6 +87,18 @@ const useWebSocket = (playerId: string, playerName: string) => {
       setNumberOfCardsToSelect(data.numberOfCardsToDiscard);
     });
 
+    newSocket.on('continueRequest', (data: EmittedDecisionRequest) => {
+      console.log('[handleReceivedContinueRequest] current player ID:', playerIdRef.current);
+      console.log('Received continue request:', data);
+      if (data.playerId !== playerIdRef.current) {
+        console.error(`Received continue request for ${data.playerId} but expected ${playerIdRef.current}. Ignoring.`);
+        return;
+      }
+      setRequestedDecisionType(AgentDecisionType.CONTINUE);
+      setRequestedDecisionData(data);
+      setNumberOfCardsToSelect(0);
+    });
+
     newSocket.on('disconnect', () => {
       console.log('Disconnected from server');
       // delete the socket
@@ -93,7 +106,7 @@ const useWebSocket = (playerId: string, playerName: string) => {
     });
 
     newSocket.on('connect', () => {
-      console.log('Connected to server');
+      console.log('Connected to server with socket ID:', newSocket.id);
     });
 
     newSocket.on('waitingForPlayer', (data: EmittedWaitingForPlayer) => {
@@ -155,6 +168,16 @@ const useWebSocket = (playerId: string, playerName: string) => {
       return;
     }
     socket.emit('discardResponse', discardResponse);
+  }; 
+
+  const continueGame = () => {
+    console.log('Continuing');
+    if (!socket) {
+      console.error('Socket is not connected. Cannot continue.');
+      return;
+    }
+    const continueResponse: EmittedContinueResponse = { playerId };
+    socket.emit('continueResponse', continueResponse);
   };
 
   const login = (name: string, username: string) => {
@@ -196,6 +219,7 @@ const useWebSocket = (playerId: string, playerName: string) => {
     numberOfCardsToSelect,
     makeMove,
     discard,
+    continueGame,
   };
 };
 

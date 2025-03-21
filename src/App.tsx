@@ -26,6 +26,7 @@ function App() {
     makeMove,
     discard,
     numberOfCardsToSelect,
+    continueGame,
   } = useWebSocket(username, name);
 
   useEffect(() => {
@@ -70,6 +71,7 @@ function App() {
           waitingOnPlayerInfo={waitingOnPlayerInfo}
           connectedPlayers={connectedPlayers}
           numberOfCardsToSelect={numberOfCardsToSelect || 0}
+          continueGame={continueGame}
         />
       ) : (
         <HomeScreen
