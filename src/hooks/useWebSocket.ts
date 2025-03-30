@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { GameState, GameEvent, EmittedMakeMoveRequest, EmittedDiscardRequest, Card, EmittedWaitingForPlayer, EmittedDiscardResponse, EmittedMakeMoveResponse, PlayerIdAndName, AgentDecisionType, EmittedDecisionRequest } from 'cribbage-core/';
+import { GameState, GameEvent, EmittedMakeMoveRequest, EmittedDiscardRequest, Card, EmittedWaitingForPlayer, EmittedDiscardResponse, EmittedMakeMoveResponse, PlayerIdAndName, AgentDecisionType, EmittedDecisionRequest, Phase } from 'cribbage-core/';
 import { EmittedContinueResponse } from 'cribbage-core/src/types';
 
 localStorage.debug = 'socket.io-client:socket';
@@ -15,12 +15,39 @@ const useWebSocket = (playerId: string, playerName: string) => {
   const [requestedDecisionType, setRequestedDecisionType] = useState<AgentDecisionType | null>(null);
   const [requestedDecisionData, setRequestedDecisionData] = useState<EmittedDecisionRequest | null>(null);
   const [numberOfCardsToSelect, setNumberOfCardsToSelect] = useState<number | null>(null);
+  // List of "scoring" relevant GameEvents for the past round
+  // aka any events that occur in the pegging phase or counting phase 
+  const [currentRoundGameEvents, setCurrentRoundGameEvents] = useState<GameEvent[]>([]);
 
   // log when playerId or playerName changes
   const playerIdRef = useRef(playerId);
   useEffect(() => {
     playerIdRef.current = playerId;
   }, [playerId]);
+
+  const prevGameEventRef = useRef<GameEvent | null>(null);
+  useEffect(() => {
+    if (recentGameEvent && recentGameEvent !== prevGameEventRef.current) {
+      console.log("[useEffect] Received new Game Event:", recentGameEvent);
+      prevGameEventRef.current = recentGameEvent;
+    }
+  }, [recentGameEvent]);
+
+  const prevDecisionDataRef = useRef<EmittedDecisionRequest | null>(null);
+  useEffect(() => {
+    if (requestedDecisionData && requestedDecisionData !== prevDecisionDataRef.current) {
+      console.log('Received decision request:', requestedDecisionData);
+      prevDecisionDataRef.current = requestedDecisionData;
+    }
+  }, [requestedDecisionData]);
+
+  const prevWaitingOnPlayerInfoRef = useRef<EmittedWaitingForPlayer | null>(null);
+  useEffect(() => {
+    if (waitingOnPlayerInfo && waitingOnPlayerInfo !== prevWaitingOnPlayerInfoRef.current) {
+      console.log('Waiting on player:', waitingOnPlayerInfo);
+      prevWaitingOnPlayerInfoRef.current = waitingOnPlayerInfo;
+    }
+  }, [waitingOnPlayerInfo]);
 
   useEffect(() => {
     let newSocket: Socket;
@@ -50,11 +77,12 @@ const useWebSocket = (playerId: string, playerName: string) => {
     });
 
     newSocket.on('gameStateChange', (newGameState: GameState) => {
-      console.log("Received new game state:", newGameState);
+      console.log('Received new game state:', newGameState);
       setGameState(newGameState);
     });
 
     newSocket.on('gameEvent', (gameEvent: GameEvent) => {
+      console.log("Received new game event:", gameEvent)
       setRecentGameEvent(gameEvent);
     });
 
@@ -64,8 +92,6 @@ const useWebSocket = (playerId: string, playerName: string) => {
     });
 
     newSocket.on('requestMakeMove', (data: EmittedMakeMoveRequest) => {
-      console.log('[socket.requestMakeMove] current player ID:', playerIdRef.current);
-      console.log('Received make move request:', data);
       if (data.playerId !== playerIdRef.current) {
         console.error(`Received make move request for ${data.playerId} but expected ${playerIdRef.current}. Ignoring.`);
         return;
@@ -76,8 +102,6 @@ const useWebSocket = (playerId: string, playerName: string) => {
     });
 
     newSocket.on('discardRequest', (data: EmittedDiscardRequest) => {
-      console.log('[handleReceivedDiscardRequest] current player ID:', playerIdRef.current);
-      console.log('Received discard request:', data);
       if (data.playerId !== playerIdRef.current) {
         console.error(`Received discard request for ${data.playerId} but expected ${playerIdRef.current}. Ignoring.`);
         return;
@@ -88,8 +112,6 @@ const useWebSocket = (playerId: string, playerName: string) => {
     });
 
     newSocket.on('continueRequest', (data: EmittedDecisionRequest) => {
-      console.log('[handleReceivedContinueRequest] current player ID:', playerIdRef.current);
-      console.log('Received continue request:', data);
       if (data.playerId !== playerIdRef.current) {
         console.error(`Received continue request for ${data.playerId} but expected ${playerIdRef.current}. Ignoring.`);
         return;
@@ -110,7 +132,6 @@ const useWebSocket = (playerId: string, playerName: string) => {
     });
 
     newSocket.on('waitingForPlayer', (data: EmittedWaitingForPlayer) => {
-      console.log('Waiting for player:', data);
       if (data.playerId === playerId) {
         console.log('You are the player being waited for');
       }
@@ -121,6 +142,11 @@ const useWebSocket = (playerId: string, playerName: string) => {
     newSocket.on('connectedPlayers', (players: PlayerIdAndName[]) => {
       console.log('Connected players:', players);
       setConnectedPlayers(players);
+    });
+
+    newSocket.on('currentRoundGameEvents', (events: GameEvent[]) => {
+      console.log('Current round game events:', events);
+      setCurrentRoundGameEvents(events);
     });
 
     setSocket(newSocket);
@@ -220,6 +246,7 @@ const useWebSocket = (playerId: string, playerName: string) => {
     makeMove,
     discard,
     continueGame,
+    currentRoundGameEvents,
   };
 };
 

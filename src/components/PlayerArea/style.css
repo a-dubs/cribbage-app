@@ -24,3 +24,17 @@
 .player-area.opponent .player-info {
     top: 10px;
 }
+.player-area .player-info .recent-score-message {
+    position: absolute;
+    width: 100%;
+    left: 0;
+}
+.player-area.you .player-info .recent-score-message {
+    top: -0.5em;
+    transform: translateY(-100%);
+}
+.player-area.opponent .player-info .recent-score-message {
+    bottom: -0.5em;
+    transform: translateY(100%);
+    position: absolute;
+}

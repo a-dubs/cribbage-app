@@ -5,6 +5,7 @@ import { EmittedContinueRequest, parseCard, Phase } from 'cribbage-core';
 // import GameScreen.css
 import './GameScreen.css';
 import { Deck, PlayingCard } from './components/PlayingCard';
+import { capitalize, capitalizeAndSpace } from './utils';
 
 interface GameScreenProps {
   username: string;
@@ -25,6 +26,8 @@ interface GameScreenProps {
   connectedPlayers: PlayerIdAndName[];
   numberOfCardsToSelect: number;
   continueGame: () => void;
+  settings: Record<string, boolean>;
+  currentRoundGameEvents: GameEvent[];
 }
 
 const GameScreen: React.FC<GameScreenProps> = ({
@@ -40,6 +43,8 @@ const GameScreen: React.FC<GameScreenProps> = ({
   connectedPlayers,
   numberOfCardsToSelect,
   continueGame,
+  settings,
+  currentRoundGameEvents,
 }) => {
 
   const [yourSelectedCards, setYourSelectedCards] = useState<Card[]>([]);
@@ -47,6 +52,15 @@ const GameScreen: React.FC<GameScreenProps> = ({
 
   const [yourPlayerInfo, setYourPlayerInfo] = useState<PlayerIdAndName | null>(null);
   const [opponentPlayerInfo, setOpponentPlayerInfo] = useState<PlayerIdAndName | null>(null);
+  // console.log("yourSelectedCards:", yourSelectedCards);
+  useEffect(() => {
+    if (settings["One Click Play Card"]) {
+      if (gameState?.currentPhase === Phase.PEGGING && yourSelectedCards.length === 1) {
+        handleMakeMove(yourSelectedCards[0])
+        setYourSelectedCards([]);
+      }
+    }
+  }, [yourSelectedCards, settings, gameState?.currentPhase, handleMakeMove]);
 
   useEffect(() => {
     if (connectedPlayers) {
@@ -66,22 +80,26 @@ const GameScreen: React.FC<GameScreenProps> = ({
 
   useEffect(() => {
     if (gameState && opponentPlayerInfo && yourPlayerInfo) {
-      const yourPlayerAreaProps = parsePlayerAreaPropsFromGameState(gameState, yourPlayerInfo.id, yourPlayerInfo.id, requestedDecisionData);
-      const opponentPlayerAreaProps = parsePlayerAreaPropsFromGameState(gameState, opponentPlayerInfo?.id, username, requestedDecisionData);
+      const yourPlayerAreaProps = parsePlayerAreaPropsFromGameState(
+        gameState,
+        yourPlayerInfo.id,
+        yourPlayerInfo.id,
+        requestedDecisionData,
+        currentRoundGameEvents,
+      );
+      const opponentPlayerAreaProps = parsePlayerAreaPropsFromGameState(
+        gameState,
+        opponentPlayerInfo?.id,
+        username,
+        requestedDecisionData,
+        currentRoundGameEvents,
+      );
       setYourPlayerAreaProps(yourPlayerAreaProps);
       setOpponentPlayerAreaProps(opponentPlayerAreaProps);
       // console.log('Your player area props:', yourPlayerAreaProps);
       // console.log('Opponent player area props:', opponentPlayerAreaProps);
     }
-  }, [gameState, opponentPlayerInfo, requestedDecisionData, username, yourPlayerInfo]);
-
-  const capitalize = (s: string) => {
-    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-  };
-
-  const capitalizeAndSpace = (s: string) => {
-    return s.split('_').map(capitalize).join(' ');
-  }
+  }, [gameState, opponentPlayerInfo, recentGameEvent, requestedDecisionData, username, yourPlayerInfo, currentRoundGameEvents]);
 
   const calculatePeggingTotal = () => {
     if (!gameState) {
@@ -118,9 +136,9 @@ const GameScreen: React.FC<GameScreenProps> = ({
       return null;
     }
     const description = (requestedDecisionData as EmittedContinueRequest|null)?.description;
-    console.log('Requested decision data:', requestedDecisionData);
-    console.log('Requested decision type:', requestedDecisionType);
-    console.log('Description:', description);
+    // console.log('Requested decision data:', requestedDecisionData);
+    // console.log('Requested decision type:', requestedDecisionType);
+    // console.log('Description:', description);
     const continueButton = (
       <button
         className="button continue-button is-primary mx-4 my-3 is-clickable"

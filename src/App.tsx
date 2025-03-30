@@ -5,6 +5,16 @@ import { PlayerIdAndName } from 'cribbage-core/src/types';
 import HomeScreen from './HomeScreen';
 import GameScreen from './GameScreen';
 
+// export interface UserSetting<T> {
+//   name: string
+//   description: string
+//   value: T
+// }
+
+// const defaultUserSettings: UserSetting[] = {
+  
+// }  
+
 function App() {
   // const [name, setName] = useState('Developer');
   // const [username, setUsername] = useState('dev-1');
@@ -13,6 +23,10 @@ function App() {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [yourPlayerInfo, setYourPlayerInfo] = useState<PlayerIdAndName | null>(null);
   const [opponentPlayerInfo, setOpponentPlayerInfo] = useState<PlayerIdAndName | null>(null);
+  const [oneClickPlayCard, setOneClickPlayCard] = useState<boolean>(true);
+  const settings: Record<string, boolean> = {
+    "One Click Play Card": true
+  }
   const {
     gameState,
     recentGameEvent,
@@ -27,6 +41,7 @@ function App() {
     discard,
     numberOfCardsToSelect,
     continueGame,
+    currentRoundGameEvents,
   } = useWebSocket(username, name);
 
   useEffect(() => {
@@ -72,6 +87,8 @@ function App() {
           connectedPlayers={connectedPlayers}
           numberOfCardsToSelect={numberOfCardsToSelect || 0}
           continueGame={continueGame}
+          settings={settings}
+          currentRoundGameEvents={currentRoundGameEvents}
         />
       ) : (
         <HomeScreen
