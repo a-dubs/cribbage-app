@@ -243,6 +243,24 @@ const GameScreen: React.FC<GameScreenProps> = ({
         <div className="has-text-left is-size-4 has-text-white px-4 py-1">
           {winnerName ? `${winnerName} wins!` : 'Game over!'}
         </div>
+        
+        <div className="has-text-left is-size-4 has-text-white px-4 py-1">
+          <p className='has-text-white is-size-3 mt-4'>
+            Scores:
+          </p>
+          {gameState?.players.map(player => {
+            const playerInfo = connectedPlayers.find(p => p.id === player.id);
+            if (!playerInfo) {
+              console.error('Player info not found');
+              return null;
+            }
+            return (
+              <div key={player.id}>
+                {playerInfo.name}: {player.score} points
+              </div>
+            );
+          })}
+        </div>
       </div>
     );
   }
