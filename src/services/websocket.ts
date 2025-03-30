@@ -1,5 +1,5 @@
 // import { io, Socket } from 'socket.io-client';
-// import { GameState, GameEvent, emittedMakeMoveRequest, emittedDiscardRequest, Card } from 'cribbage-core/src/types';
+// import { GameState, GameEvent, emittedMakeMoveRequest, emittedDiscardRequest, Card } from 'cribbage-core';
 
 // class WebSocketService {
 //   private socket: Socket;

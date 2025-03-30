@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { parsePlayerAreaPropsFromGameState, PlayerArea, PlayerAreaProps } from './components/PlayerArea/PlayerArea';
-import { AgentDecisionType, Card, EmittedDecisionRequest, EmittedWaitingForPlayer, GameEvent, GameState, PlayerIdAndName } from 'cribbage-core/src/types';
+import { AgentDecisionType, Card, EmittedDecisionRequest, EmittedWaitingForPlayer, GameEvent, GameState, PlayerIdAndName } from 'cribbage-core';
 import { EmittedContinueRequest, parseCard, Phase } from 'cribbage-core';
 // import GameScreen.css
 import './GameScreen.css';

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { GameState, GameEvent, EmittedMakeMoveRequest, EmittedDiscardRequest, Card, EmittedWaitingForPlayer, EmittedDiscardResponse, EmittedMakeMoveResponse, PlayerIdAndName, AgentDecisionType, EmittedDecisionRequest, Phase } from 'cribbage-core/';
-import { EmittedContinueResponse } from 'cribbage-core/src/types';
+import { EmittedContinueResponse } from 'cribbage-core';
 
 localStorage.debug = 'socket.io-client:socket';
 const apiUrl = process.env.REACT_APP_API_URL;

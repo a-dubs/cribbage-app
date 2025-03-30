@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import LoginForm from './components/Forms/LoginForm';
 import { StartGameForm } from './components/Forms/StartGameForm';
-import { PlayerIdAndName } from 'cribbage-core/src/types';
+import { PlayerIdAndName } from 'cribbage-core';
 import { MAX_PLAYERS } from './constants';
 
 

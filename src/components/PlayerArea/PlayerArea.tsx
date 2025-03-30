@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { StackedHand } from '../PlayingCard/PlayingCard';
-import { Card, GameState, Phase } from 'cribbage-core/src/types';
+import { Card, GameState, Phase } from 'cribbage-core';
 import './PlayerArea.css';
 import { ActionType, AgentDecisionType, EmittedDecisionRequest, EmittedMakeMoveRequest, GameEvent, getMostRecentEventForPlayerByActionType, getMostRecentScoreableEventForPlayer } from 'cribbage-core';
 import { capitalizeAndSpace } from 'utils';
