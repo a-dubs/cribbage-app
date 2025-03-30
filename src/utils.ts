@@ -5,3 +5,16 @@ export const capitalize = (s: string) => {
 export const capitalizeAndSpace = (s: string) => {
   return s.split('_').map(capitalize).join(' ');
 }
+
+export const saveLoginInfoToLocalStorage = (name: string, username: string) => {
+  localStorage.setItem('name', name);
+  localStorage.setItem('username', username);
+}
+
+export const getUsernameFromLocalStorage = () => {
+  return localStorage.getItem('username');
+}
+
+export const getNameFromLocalStorage = () => {
+  return localStorage.getItem('name');
+}
