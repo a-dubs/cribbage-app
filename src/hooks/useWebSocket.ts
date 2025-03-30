@@ -4,6 +4,11 @@ import { GameState, GameEvent, EmittedMakeMoveRequest, EmittedDiscardRequest, Ca
 import { EmittedContinueResponse } from 'cribbage-core/src/types';
 
 localStorage.debug = 'socket.io-client:socket';
+const apiUrl = process.env.REACT_APP_API_URL;
+console.log('api url:', apiUrl);
+if (!apiUrl) {
+  throw new Error('REACT_APP_API_URL is not set');
+}
 
 const useWebSocket = (playerId: string, playerName: string) => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -59,7 +64,7 @@ const useWebSocket = (playerId: string, playerName: string) => {
     }
     else {
       console.log('Connecting to server...');
-      newSocket = io('http://localhost:3002', {
+      newSocket = io(apiUrl, {
         // transports: ['websocket'],
         withCredentials: true,
         auth: {
