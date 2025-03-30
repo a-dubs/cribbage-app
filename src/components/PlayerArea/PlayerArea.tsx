@@ -6,10 +6,10 @@
 
 import React from 'react';
 import { StackedHand } from '../PlayingCard/PlayingCard';
-import { Card, GameState, Phase } from 'cribbage-core/src/types';
-import './style.css';
-import { ActionType, AgentDecisionType, EmittedDecisionRequest, EmittedMakeMoveRequest, GameEvent, getMostRecentEventForPlayerByActionType, getMostRecentScoreableEventForPlayer } from 'cribbage-core';
-import { capitalizeAndSpace } from 'utils';
+// import {  } from 'cribbage-core/src/types';
+// import './PlayerArea.css';
+import { ActionType, AgentDecisionType, EmittedDecisionRequest, EmittedMakeMoveRequest, GameEvent, getMostRecentEventForPlayerByActionType, getMostRecentScoreableEventForPlayer, Card, GameState, Phase } from 'cribbage-core';
+import { capitalizeAndSpace } from '../../utils';
 
 export function parsePlayerAreaPropsFromGameState(
   game: GameState,
@@ -151,23 +151,23 @@ export const PlayerArea = ({
   cribPoints,
   currentPhase,
 }: PlayerAreaProps) => {
-  console.log('currentPhase:', currentPhase);
   const playedCardsComponent = currentPhase === Phase.PEGGING && (
     <StackedHand
       title={isOpponent ? `${name}'s Played Cards` : 'Your Played Cards'}
       cards={playedCards}
       selectedCards={[]}
-      setSelectedCards={() => { }}
+      setSelectedCards={() => {}}
       hidden={false}
     />
   );
+
   const handPointsTextSuffix = handPoints ? ` (${handPoints} points)` : '';
   const handComponent = (
     <StackedHand
       title={(isOpponent ? `${name}'s Hand` : 'Your hand') + handPointsTextSuffix}
       cards={hand}
       selectedCards={selectedCards || []}
-      setSelectedCards={setSelectedCards || (() => { })}
+      setSelectedCards={setSelectedCards || (() => {})}
       hidden={!showHand && isOpponent}
       hoverAnimation={!isOpponent}
       areSelectable={!isOpponent}
@@ -180,40 +180,42 @@ export const PlayerArea = ({
       title={(isOpponent ? `${name}'s Crib` : 'Your Crib') + cribPointsTextSuffix}
       cards={crib || []}
       selectedCards={[]}
-      setSelectedCards={() => { }}
+      setSelectedCards={() => {}}
       hidden={showCrib ? false : true}
     />
   );
 
   return (
-    <div className={`player-area ${isOpponent ? 'opponent' : 'you'}`}>
+    <div
+      className={`w-full relative ${isOpponent ? 'fixed top-2' : 'fixed bottom-2'}`}
+    >
       {isOpponent ? (
         <>
           {handComponent}
           {crib ? cribComponent : playedCardsComponent}
         </>
-      ): (
+      ) : (
         <>
           {crib ? cribComponent : playedCardsComponent}
           {handComponent}
         </>
       )}
-      <div className='card player-info'>
-        <div className='card-header'>
-          <p className='card-header-title is-centered player-name'>{isDealer ? '👑 ': ''}{name} ({username})</p>
+      <div
+        className="absolute right-5 w-48 rounded-lg bg-gray-800 text-white"
+        style={{ top: isOpponent ? '10px' : undefined, bottom: isOpponent ? undefined : '10px' }}
+      >
+        <div className="text-center font-bold">
+          <p>{isDealer ? '👑 ' : ''}{name} ({username})</p>
         </div>
-        <div className='card-content'>
-          {/* <p className='card-header-icon is-centered'></p> */}
-          <p className='player-points has-text-white'>{points} points</p>
+        <div className="text-center">
+          <p>{points} points</p>
         </div>
-        {
-          lastScoredPointsInfo && (
-            <p className='recent-score-message has-text-primary is-centered'>
-              {`+${lastScoredPointsInfo.points} points`}
-            </p>
-          )
-        }
+        {lastScoredPointsInfo && (
+          <p className={`absolute w-full text-center text-blue-500 ${isOpponent ? 'bottom-[-0.5em]' : 'top-[-0.5em]'}`}>
+            {`+${lastScoredPointsInfo.points} points`}
+          </p>
+        )}
       </div>
     </div>
   );
-}
+};

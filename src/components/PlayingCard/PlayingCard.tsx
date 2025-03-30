@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card } from 'cribbage-core/src/types';
-import './style.css';
+// import './style.css';
 
 const cardNameMap: { [key: string]: string } = {
   two: '2',
@@ -47,31 +47,21 @@ export const PlayingCard = ({ card, hidden, onClick, isSelected, isSelectable }:
   const cardImageName = hidden || card === null ? backOfCardName : convertCardToImageName(card);
   const id = hidden || card === null ? backOfCardName : card;
   return (
-    <div className={`playing-card ${isSelected ? 'selected' : ''} ${isSelectable ? 'selectable' : ''}`} onClick={onClick}>
+    <div
+      className={`inline-block rounded-lg border-2 ${isSelected ? 'border-red-500 mt-2 mb-1' : 'border-black'} ${isSelectable ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+      style={{ padding: '3px 5px 3px 1px', overflow: 'hidden' }}
+    >
       <img
-        className='playing-card-image'
+        className="w-full h-24 mx-auto pointer-events-none select-none"
         src={cardImagePath}
         alt={cardImageName}
         id={id}
+        style={{ marginTop: '2px', marginBottom: '-4px', marginLeft: '2px', marginRight: '2px' }}
       />
     </div>
   );
 };
-
-// export const Hand = ({ cards, title }: { cards: Card[], title: string }) => {
-//   return (
-//     <div className='hand'>
-//       <p className='hand-title is-size-4 has-text-light'>{title}</p>
-//       <div className='hand-content'>
-//         {cards.map((card, index) => (
-//           <PlayingCard key={index} card={card} />
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
-
-
 
 export interface CardsInPlayProps {
   cards: Card[];
@@ -82,9 +72,9 @@ export interface CardsInPlayProps {
 
 export const CardsInPlay = ({ cards, title, isHand, hidden = false }: CardsInPlayProps) => {
   return (
-    <div className={`cards-in-play ${isHand ? 'is-hand' : 'is-played'}`}>
-      {title && <p className='cards-in-play-title is-size-4 has-text-light'>{title}</p>}
-      <div className='cards-in-play-content'>
+    <div className={`w-1/3 mx-auto py-2 ${isHand ? 'border-t-2 border-b-2 border-white' : 'bg-gray-600 rounded-2xl my-5'}`}>
+      {title && <p className="text-lg text-light">{title}</p>}
+      <div className="flex flex-wrap justify-center items-center">
         {cards.map((card, index) => (
           <PlayingCard key={index} card={card} hidden={hidden} />
         ))}
@@ -117,9 +107,9 @@ export const Hand = ({
   };
 
   return (
-    <div className='hand'>
-      <p className='hand-title is-size-4 has-text-light'>{title}</p>
-      <div className='hand-content'>
+    <div className="w-1/3 mx-auto py-2 border-t-2 border-b-2 border-white">
+      <p className="text-lg text-light">{title}</p>
+      <div className="flex flex-wrap justify-center items-center">
         {
           cards.map((card, index) => {
             return (
@@ -154,11 +144,11 @@ export const CardStack: React.FC<CardStackProps> = ({
   hoverAnimation = false,
 }) => {
   return (
-    <div className="card-stack">
+    <div className="relative inline-block w-full h-28 mb-4">
       {items.map((item, index) => (
         <div
           key={index}
-          className={`card-stack-item ${hoverAnimation ? 'hover-enabled' : ''}`}
+          className={`absolute top-0 ${hoverAnimation ? 'hover:mt-0' : ''}`}
           style={{
             left: `${index * offset}px`,
             zIndex: index, // lower index is at the bottom of the stack
@@ -250,8 +240,8 @@ export const StackedHand = ({
   ));
 
   return (
-    <div className='hand'>
-      <p className='hand-title is-size-4 has-text-light'>{title}</p>
+    <div className="w-1/3 mx-auto py-2">
+      <p className="text-lg text-light">{title}</p>
       <CardStack items={items} offset={stackOffset} hoverAnimation={hoverAnimation} />
     </div>
   );

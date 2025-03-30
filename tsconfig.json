@@ -1,43 +1,7 @@
 {
-    "compilerOptions": {
-      // Basic Options
-      "target": "ESNext",                       // Specify ECMAScript target version (latest modern version)
-      "lib": ["DOM", "DOM.Iterable", "ESNext"], // Specify libraries for browser and ESNext features
-      "jsx": "react-jsx",                       // Use React's JSX transform (react-jsx for React 17+)
-  
-      // Module Resolution
-      "module": "ESNext",                       // Use ESNext module resolution
-      "moduleResolution": "Node",              // Resolve modules using Node.js-like behavior
-      "baseUrl": "./src",                       // Base directory for resolving non-relative module imports
-      "paths": {
-        "@components/*": ["components/*"],     // Example of a path alias
-        "@utils/*": ["utils/*"]
-      },
-      "allowSyntheticDefaultImports": true,     // Allow default imports from modules with no default export
-      "esModuleInterop": true,                  // Enable compatibility with CommonJS modules
-  
-      // Type Checking
-      "strict": true,                           // Enable all strict type-checking options
-      "strictNullChecks": true,                 // Ensure `null` and `undefined` are distinct types
-      "strictFunctionTypes": true,              // Enable strict checking of function types
-      "noImplicitAny": true,                    // Disallow `any` types
-      "noImplicitThis": true,                   // Ensure `this` is typed correctly
-  
-      // Emit Options
-      "outDir": "./build",                      // Specify output directory for compiled files
-      "noEmit": true,                           // Disable emitting compiled files (useful for type checking only)
-  
-      // Additional Checks
-      "forceConsistentCasingInFileNames": true, // Enforce consistent file name casing
-      "skipLibCheck": true,                     // Skip type checking of declaration files for faster builds
-  
-      // Source Map Options
-      "sourceMap": true,                        // Generate source maps for debugging
-      "inlineSources": true,                    // Embed original source files into source maps
-      "declaration": true,                      // Generate `.d.ts` files for type declarations
-      "declarationMap": true                    // Generate source maps for `.d.ts` files
-    },
-    "include": ["src"],                         // Include all files in the `src` directory
-    "exclude": ["node_modules", "build"]        // Exclude `node_modules` and output directories
-  }
-  
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}
