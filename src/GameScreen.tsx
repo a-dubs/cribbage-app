@@ -117,7 +117,7 @@ const GameScreen: React.FC<GameScreenProps> = ({
       return null;
     }
     return (
-      <div className="has-text-left is-size-2 has-text-white px-4 py-1">
+      <div className="has-text-left bold is-size-3 has-text-white px-4 py-1">
         {capitalize(gameState?.currentPhase ?? '')}
       </div>
     );
@@ -127,15 +127,24 @@ const GameScreen: React.FC<GameScreenProps> = ({
   // use the waitingOnPlayerInfo to display what is happening
   // "Waiting on {player.name} to {AgentDecisionType}"
   const waitingOnPlayerElement = (() => {
-    if (!waitingOnPlayerInfo) {
+    if (!waitingOnPlayerInfo || !requestedDecisionData) {
       return null;
     }
-    const playerName = connectedPlayers.find(player => player.id === waitingOnPlayerInfo.playerId)?.name;
+    // TODO: fix this - holy hell is this so hacky. need to rework how waiting on player info is handled
+    // when done in parallel
+    // this just covers the case when we are waiting for all players to "continue" to end the round
+    let playerName = null;
+    if (gameState?.currentPhase === Phase.COUNTING && waitingOnPlayerInfo.waitingFor === AgentDecisionType.PLAY_CARD) {
+      // use the requestedDecisionData to get the player name since it is more recent
+      playerName = connectedPlayers.find(player => player.id === requestedDecisionData.playerId)?.name;
+    } else { // the normal case:
+      playerName = connectedPlayers.find(player => player.id === waitingOnPlayerInfo.playerId)?.name;
+    }
     if (!playerName) {
       console.error('Player name not found');
       return null;
     }
-    const description = (requestedDecisionData as EmittedContinueRequest|null)?.description;
+    const description = (requestedDecisionData as unknown as EmittedContinueRequest)?.description;
     // console.log('Requested decision data:', requestedDecisionData);
     // console.log('Requested decision type:', requestedDecisionType);
     // console.log('Description:', description);
@@ -151,10 +160,10 @@ const GameScreen: React.FC<GameScreenProps> = ({
       return (
         // <div className="has-text-left is-size-4 has-text-white px-4 py-1">
         <div className="has-text-left">
-          <p className="has-text-left is-size-4 has-text-white px-4 py-1">
-            Your turn to {capitalizeAndSpace(waitingOnPlayerInfo.waitingFor)}
+          <p className="has-text-left is-size-5 has-text-primary px-4 py-1">
+            Your turn to {description || capitalizeAndSpace(waitingOnPlayerInfo.waitingFor)}
           </p>
-          <p className="has-text-left is-size-4 has-text-white px-4 py-1">
+          <p className="has-text-left is-size-6 has-text-white px-4 py-1">
             {requestedDecisionType === AgentDecisionType.DISCARD
               && `Select ${numberOfCardsToSelect} cards to discard`
             }
@@ -163,7 +172,7 @@ const GameScreen: React.FC<GameScreenProps> = ({
             }
           </p>
           {description && continueButton}
-          {!description &&
+          {!description && !(settings["One Click Play Card"] &&  requestedDecisionType === AgentDecisionType.PLAY_CARD) &&
             <button
               className="button is-primary mx-4 my-3 is-clickable"
               onClick={handleDoneSelecting}
@@ -194,8 +203,8 @@ const GameScreen: React.FC<GameScreenProps> = ({
       );
     }
     return (
-      <div className="has-text-left is-size-4 has-text-white px-4 py-1">
-        Waiting on {playerName} to {capitalize(waitingOnPlayerInfo.waitingFor)}
+      <div className="has-text-left is-size-5 has-text-grey px-4 py-1">
+        Waiting on {playerName} to {capitalizeAndSpace(waitingOnPlayerInfo.waitingFor)}
       </div>
     );
   });
@@ -212,7 +221,9 @@ const GameScreen: React.FC<GameScreenProps> = ({
   // create element that combines the waiting info and the game phase info
   const gameInfoElement = (() => {
     return (
-      <div className='box game-info'>
+      <div className='box game-info m-4'
+        style={{ maxWidth: "20em" }}
+      >
         {gamePhaseElement()}
         {waitingOnPlayerElement()}
       </div>

@@ -30,17 +30,17 @@ export function parsePlayerAreaPropsFromGameState(
   let showHand = false;
 
   if (game.currentPhase === Phase.PEGGING) {
-    if (!requestedDecisionData || requestedDecisionData.requestType !== AgentDecisionType.PLAY_CARD) {
-      currentHand = [];
-      playedCards = [];
-      console.error('No requested decision data during pegging phase');
-    } else {
-      const makeMoveData = (requestedDecisionData as EmittedMakeMoveRequest);
-      playedCards = makeMoveData.playedCards
-        .filter(playedCard => playedCard.playerId === targetPlayerID)
-        .map(playedCard => playedCard.card);
-      currentHand = player.hand.filter(card => !playedCards.includes(card));
-    }
+    // if (!requestedDecisionData || requestedDecisionData.requestType !== AgentDecisionType.PLAY_CARD) {
+      console.log('No requested decision data during pegging phase');
+      currentHand = player.peggingHand;
+      playedCards = player.hand.filter(card => !player.peggingHand.includes(card));
+    // } else {
+    //   const makeMoveData = (requestedDecisionData as EmittedMakeMoveRequest);
+    //   playedCards = makeMoveData.playedCards
+    //     .filter(playedCard => playedCard.playerId === targetPlayerID)
+    //     .map(playedCard => playedCard.card);
+    //   currentHand = player.hand.filter(card => !playedCards.includes(card));
+    // }
   } else if (game.currentPhase === Phase.COUNTING) {
     showHand = true;
     currentHand = player.hand;

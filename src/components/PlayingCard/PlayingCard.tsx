@@ -150,7 +150,7 @@ export interface CardStackProps {
 
 export const CardStack: React.FC<CardStackProps> = ({
   items,
-  offset = 30,
+  offset = 40,
   hoverAnimation = false,
 }) => {
   return (

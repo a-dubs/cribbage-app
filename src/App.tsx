@@ -73,7 +73,7 @@ function App() {
 
   return (
     <div className="App has-background-grey-dark">
-      {yourPlayerInfo && opponentPlayerInfo ? (
+      {gameState ? (
         <GameScreen
           username={username}
           gameState={gameState}
