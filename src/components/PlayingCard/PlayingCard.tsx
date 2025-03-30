@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card } from 'cribbage-core/src/types';
-import './style.css';
+import './PlayingCard.css';
 
 const cardNameMap: { [key: string]: string } = {
   two: '2',
