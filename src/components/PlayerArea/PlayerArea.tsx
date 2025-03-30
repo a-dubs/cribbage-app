@@ -5,7 +5,7 @@
 // otherwise, they can only see their played cards
 
 import React from 'react';
-import { StackedHand } from '../PlayingCard';
+import { StackedHand } from '../PlayingCard/PlayingCard';
 import { Card, GameState, Phase } from 'cribbage-core/src/types';
 import './style.css';
 import { ActionType, AgentDecisionType, EmittedDecisionRequest, EmittedMakeMoveRequest, GameEvent, getMostRecentEventForPlayerByActionType, getMostRecentScoreableEventForPlayer } from 'cribbage-core';
