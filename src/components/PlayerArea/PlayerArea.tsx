@@ -4,11 +4,10 @@
 // if the player is the active user, they can see their hand at all times,
 // otherwise, they can only see their played cards
 
-import React from 'react';
 import { StackedHand } from '../PlayingCard/PlayingCard';
 import { Card, GameState, Phase } from 'cribbage-core';
 import './PlayerArea.css';
-import { ActionType, AgentDecisionType, EmittedDecisionRequest, EmittedMakeMoveRequest, GameEvent, getMostRecentEventForPlayerByActionType, getMostRecentScoreableEventForPlayer } from 'cribbage-core';
+import { ActionType, EmittedDecisionRequest, GameEvent, getMostRecentEventForPlayerByActionType, getMostRecentScoreableEventForPlayer } from 'cribbage-core';
 import { capitalizeAndSpace } from 'utils';
 
 export function parsePlayerAreaPropsFromGameState(
@@ -29,18 +28,10 @@ export function parsePlayerAreaPropsFromGameState(
   let showCrib = false;
   let showHand = false;
 
+  // Setting hand and played card info
   if (game.currentPhase === Phase.PEGGING) {
-    // if (!requestedDecisionData || requestedDecisionData.requestType !== AgentDecisionType.PLAY_CARD) {
-      console.log('No requested decision data during pegging phase');
       currentHand = player.peggingHand;
-      playedCards = player.hand.filter(card => !player.peggingHand.includes(card));
-    // } else {
-    //   const makeMoveData = (requestedDecisionData as EmittedMakeMoveRequest);
-    //   playedCards = makeMoveData.playedCards
-    //     .filter(playedCard => playedCard.playerId === targetPlayerID)
-    //     .map(playedCard => playedCard.card);
-    //   currentHand = player.hand.filter(card => !playedCards.includes(card));
-    // }
+      playedCards = player.playedCards;
   } else if (game.currentPhase === Phase.COUNTING) {
     showHand = true;
     currentHand = player.hand;
@@ -50,15 +41,6 @@ export function parsePlayerAreaPropsFromGameState(
       crib = game.crib;
       showCrib = true;
     }
-    // const mostRecentGameEvent = getMostRecentScoreableEventForPlayer(
-    //   currentRoundGameEvents || [],
-    //   targetPlayerID
-    // );
-    // if (mostRecentGameEvent && mostRecentGameEvent.actionType === ActionType.SCORE_HAND) {
-    //   showCrib = true;
-    // } else {
-    //   showCrib = false;
-    // }
   } else {
     currentHand = player.hand;
     playedCards = [];
@@ -78,6 +60,7 @@ export function parsePlayerAreaPropsFromGameState(
     currentPhase: game.currentPhase,
   };
 
+  // Getting most recent event info for player
   if (currentRoundGameEvents) {
     const mostRecentGameEvent = getMostRecentScoreableEventForPlayer(
       currentRoundGameEvents,
