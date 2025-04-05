@@ -42,6 +42,8 @@ function App() {
     numberOfCardsToSelect,
     continueGame,
     currentRoundGameEvents,
+    playAgain,
+    playAgainVotes,
   } = useWebSocket(username, name);
 
   useEffect(() => {
@@ -93,6 +95,8 @@ function App() {
           continueGame={continueGame}
           settings={settings}
           currentRoundGameEvents={currentRoundGameEvents}
+          playAgain={playAgain}
+          playAgainVotes={playAgainVotes}
         />
       ) : (
         <HomeScreen
