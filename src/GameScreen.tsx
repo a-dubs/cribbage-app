@@ -167,9 +167,11 @@ const GameScreen: React.FC<GameScreenProps> = ({
       return (
         // <div className="has-text-left is-size-4 has-text-white px-4 py-1">
         <div className="has-text-left">
-          <p className="has-text-left is-size-5 has-text-primary px-4 py-1">
-            Your turn to {description || capitalizeAndSpace(waitingOnPlayerInfo.waitingFor)}
-          </p>
+          {!description && (
+            <p className="has-text-left is-size-5 has-text-primary px-4 py-1">
+              Your turn to {capitalizeAndSpace(waitingOnPlayerInfo.waitingFor)}
+            </p>
+          )}
           <p className="has-text-left is-size-6 has-text-white px-4 py-1">
             {requestedDecisionType === AgentDecisionType.DISCARD
               && `Select ${numberOfCardsToSelect} cards to discard`
