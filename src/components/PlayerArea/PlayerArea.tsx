@@ -153,7 +153,7 @@ export const PlayerArea = ({
       setSelectedCards={setSelectedCards || (() => { })}
       hidden={!showHand && isOpponent}
       hoverAnimation={!isOpponent}
-      areSelectable={!isOpponent}
+      areSelectable={!isOpponent && (currentPhase === Phase.PEGGING || currentPhase === Phase.DISCARDING)}
     />
   );
 
