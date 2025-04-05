@@ -144,7 +144,7 @@ export const PlayerArea = ({
       hidden={false}
     />
   );
-  const handPointsTextSuffix = handPoints ? ` (${handPoints} points)` : '';
+  const handPointsTextSuffix = handPoints !== undefined ? ` (${handPoints} points)` : '';
   const handComponent = (
     <StackedHand
       title={(isOpponent ? `${name}'s Hand` : 'Your hand') + handPointsTextSuffix}
@@ -157,7 +157,7 @@ export const PlayerArea = ({
     />
   );
 
-  const cribPointsTextSuffix = cribPoints ? ` (${cribPoints} points)` : '';
+  const cribPointsTextSuffix = cribPoints !== undefined ? ` (${cribPoints} points)` : '';
   const cribComponent = (
     <StackedHand
       title={(isOpponent ? `${name}'s Crib` : 'Your Crib') + cribPointsTextSuffix}
