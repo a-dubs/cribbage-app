@@ -52,7 +52,7 @@ const GameScreen: React.FC<GameScreenProps> = ({
 }) => {
 
   const [yourSelectedCards, setYourSelectedCards] = useState<Card[]>([]);
-  // const [numberOfCardsToSelect, setNumberOfCardsToSelect] = useState<number>(0);
+  const [showModalContent, setShowModalContent] = useState<boolean>(true);
 
   const [yourPlayerInfo, setYourPlayerInfo] = useState<PlayerIdAndName | null>(null);
   const [opponentPlayerInfo, setOpponentPlayerInfo] = useState<PlayerIdAndName | null>(null);
@@ -250,41 +250,111 @@ const GameScreen: React.FC<GameScreenProps> = ({
     if (!winnerName) {
       console.error('Winner name not found');
     }
+    
+    const readyCount = playAgainVotes.length;
+    const totalPlayers = connectedPlayers.length;
+    
     return (
       <div className="GameScreen">
-        <div className="has-text-left is-size-2 has-text-white px-4 py-1">Game Over</div>
-        <div className="has-text-left is-size-4 has-text-white px-4 py-1">
-          {winnerName ? `${winnerName} wins!` : 'Game over!'}
-        </div>
-        
-        <div className="has-text-left is-size-4 has-text-white px-4 py-1">
-          <p className='has-text-white is-size-3 mt-4'>
-            Scores:
-          </p>
-          {gameState?.players.map(player => {
-            const playerInfo = connectedPlayers.find(p => p.id === player.id);
-            if (!playerInfo) {
-              console.error('Player info not found');
-              return null;
+        {/* Game screen content underneath modal */}
+        {gameState && (
+          <>
+            <div
+              className="deck"
+              style={{ position: 'absolute', top: '50%', left: '25px', transform: 'translateY(-50%)', width: '200px' }}
+            >
+              <Deck
+                stackSize={10}
+                topCard={gameState.turnCard}
+              />
+            </div>
+            {gameInfoElement()}
+            {
+              yourPlayerAreaProps && opponentPlayerAreaProps && (
+                <>
+                  <PlayerArea
+                    {...yourPlayerAreaProps}
+                    selectedCards={yourSelectedCards}
+                    setSelectedCards={setYourSelectedCards}
+                  />
+                  <PlayerArea {...opponentPlayerAreaProps} />
+                  <p className="has-text-left is-size-4 has-text-white px-4 py-1 pegging-total has-text-centered"
+                    style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
+                  >
+                    {gameState.currentPhase === Phase.PEGGING && `Pegging total: ${calculatePeggingTotal()} / 31`}
+                  </p>
+                </>
+              )
             }
-            return (
-              <div key={player.id}>
-                {playerInfo.name}: {player.score} points
-              </div>
-            );
-          })}
+          </>
+        )}
+
+        {/* Toggle button at the top center */}
+        <div style={{ position: 'fixed', top: '25px', left: '50%', transform: 'translateX(-50%)', zIndex: 41 }}>
+          <button 
+            className="button is-info"
+            onClick={() => setShowModalContent(!showModalContent)}
+          >
+            {showModalContent ? 'Hide Game Over Dialogue' : 'Show Game Over Dialogue'}
+          </button>
         </div>
 
-        <div className="has-text-left is-size-4 has-text-white px-4 py-4">
-          <button
-            className="button is-primary mx-4 my-3 is-clickable"
-            onClick={playAgain}
-          >
-            Play Again
-          </button>
-          <p className="has-text-left is-size-5 has-text-white px-4 py-1">
-            Players who voted to play again: {playAgainVotes.map(id => connectedPlayers.find(player => player.id === id)?.name).join(', ')}
-          </p>
+        {/* Game over modal */}
+        <div className="modal is-active" style={{}}>
+          <div className="modal-background"></div>
+          {showModalContent && (
+            <div className="modal-card">
+              <header className="modal-card-head">
+                <p className="modal-card-title">Game Over</p>
+              </header>
+              <section className="modal-card-body">
+                <div className="has-text-center is-size-3 mb-4 has-text-primary">
+                  {winnerName ? `${winnerName} wins!` : 'Game over!'}
+                </div>
+                <hr></hr>
+                <div className="has-text-left">
+                  <p className='is-size-4 mb-2'>Scores:</p>
+                  {gameState?.players.map(player => {
+                    const playerInfo = connectedPlayers.find(p => p.id === player.id);
+                    if (!playerInfo) {
+                      console.error('Player info not found');
+                      return null;
+                    }
+                    return (
+                      <div key={player.id} className="is-size-5 mb-2">
+                        <b>{playerInfo.name}</b>: {player.score} points
+                      </div>
+                    );
+                  })}
+                </div>
+                <hr></hr>
+                <div className="has-text-left mt-3">
+                  <p className="is-size-4 mb-3">Ready To Play Again? ({readyCount}/{totalPlayers} Ready)</p>
+                  {connectedPlayers.map(player => {
+                    const hasVoted = playAgainVotes.includes(player.id);
+                    return (
+                      <div key={player.id} className="is-size-5 mb-4 d-flex align-items-center">
+                        <span className={`tag is-medium mr-3 ${hasVoted ? 'is-success' : 'is-warning'}`}  
+                        >
+                          {hasVoted ? 'Ready' : 'Not Ready'}
+                        </span>
+                        {player.name}
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+              <footer className="modal-card-foot">
+                <button
+                  className="button is-primary"
+                  onClick={playAgain}
+                  disabled={playAgainVotes.includes(username)}
+                >
+                  {playAgainVotes.includes(username) ? 'Waiting for others...' : 'Play Again'}
+                </button>
+              </footer>
+            </div>
+          )}
         </div>
       </div>
     );
