@@ -72,7 +72,10 @@ function App() {
   };
 
   return (
-    <div className="App has-background-grey-dark">
+    <div
+      className="App"
+      style={{backgroundColor: '#35654d'}}
+    >
       {gameState ? (
         <GameScreen
           username={username}
