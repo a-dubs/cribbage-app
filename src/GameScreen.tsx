@@ -4,7 +4,7 @@ import { AgentDecisionType, Card, EmittedDecisionRequest, EmittedWaitingForPlaye
 import { EmittedContinueRequest, parseCard, Phase } from 'cribbage-core';
 // import GameScreen.css
 import './GameScreen.css';
-import { Deck, PlayingCard } from './components/PlayingCard/PlayingCard';
+import { Deck } from './components/PlayingCard/PlayingCard';
 import { capitalize, capitalizeAndSpace } from './utils';
 
 interface GameScreenProps {
@@ -28,6 +28,8 @@ interface GameScreenProps {
   continueGame: () => void;
   settings: Record<string, boolean>;
   currentRoundGameEvents: GameEvent[];
+  playAgain: () => void;
+  playAgainVotes: string[];
 }
 
 const GameScreen: React.FC<GameScreenProps> = ({
@@ -45,6 +47,8 @@ const GameScreen: React.FC<GameScreenProps> = ({
   continueGame,
   settings,
   currentRoundGameEvents,
+  playAgain,
+  playAgainVotes,
 }) => {
 
   const [yourSelectedCards, setYourSelectedCards] = useState<Card[]>([]);
@@ -269,6 +273,18 @@ const GameScreen: React.FC<GameScreenProps> = ({
               </div>
             );
           })}
+        </div>
+
+        <div className="has-text-left is-size-4 has-text-white px-4 py-4">
+          <button
+            className="button is-primary mx-4 my-3 is-clickable"
+            onClick={playAgain}
+          >
+            Play Again
+          </button>
+          <p className="has-text-left is-size-5 has-text-white px-4 py-1">
+            Players who voted to play again: {playAgainVotes.map(id => connectedPlayers.find(player => player.id === id)?.name).join(', ')}
+          </p>
         </div>
       </div>
     );

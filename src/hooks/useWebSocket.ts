@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { GameState, GameEvent, EmittedMakeMoveRequest, EmittedDiscardRequest, Card, EmittedWaitingForPlayer, EmittedDiscardResponse, EmittedMakeMoveResponse, PlayerIdAndName, AgentDecisionType, EmittedDecisionRequest, Phase } from 'cribbage-core/';
+import { GameState, GameEvent, EmittedMakeMoveRequest, EmittedDiscardRequest, Card, EmittedWaitingForPlayer, EmittedDiscardResponse, EmittedMakeMoveResponse, PlayerIdAndName, AgentDecisionType, EmittedDecisionRequest, Phase, ActionType } from 'cribbage-core/';
 import { EmittedContinueResponse } from 'cribbage-core';
 
 localStorage.debug = 'socket.io-client:socket';
@@ -20,9 +20,24 @@ const useWebSocket = (playerId: string, playerName: string) => {
   const [requestedDecisionType, setRequestedDecisionType] = useState<AgentDecisionType | null>(null);
   const [requestedDecisionData, setRequestedDecisionData] = useState<EmittedDecisionRequest | null>(null);
   const [numberOfCardsToSelect, setNumberOfCardsToSelect] = useState<number | null>(null);
+  const [playAgainVotes, setPlayAgainVotes] = useState<string[]>([]);
   // List of "scoring" relevant GameEvents for the past round
   // aka any events that occur in the pegging phase or counting phase 
   const [currentRoundGameEvents, setCurrentRoundGameEvents] = useState<GameEvent[]>([]);
+
+  const resetState = () => {
+    console.log('Resetting state');
+    setGameState(null);
+    setRecentGameEvent(null);
+    setWaitingOnPlayerInfo(null);
+    // setConnectedPlayers([]);
+    setWinner(null);
+    setRequestedDecisionType(null);
+    setRequestedDecisionData(null);
+    setNumberOfCardsToSelect(null);
+    setPlayAgainVotes([]);
+    setCurrentRoundGameEvents([]);
+  }
 
   // log when playerId or playerName changes
   const playerIdRef = useRef(playerId);
@@ -35,6 +50,10 @@ const useWebSocket = (playerId: string, playerName: string) => {
     if (recentGameEvent && recentGameEvent !== prevGameEventRef.current) {
       console.log("[useEffect] Received new Game Event:", recentGameEvent);
       prevGameEventRef.current = recentGameEvent;
+    }
+    if (recentGameEvent && recentGameEvent.actionType === ActionType.WIN) {
+      console.log("Game over! Winner:", recentGameEvent.playerId);
+      setWinner(recentGameEvent.playerId);
     }
   }, [recentGameEvent]);
 
@@ -53,6 +72,14 @@ const useWebSocket = (playerId: string, playerName: string) => {
       prevWaitingOnPlayerInfoRef.current = waitingOnPlayerInfo;
     }
   }, [waitingOnPlayerInfo]);
+
+  const prevGameStateRef = useRef<GameState | null>(null);
+  useEffect(() => {
+    if (gameState && gameState !== prevGameStateRef.current) {
+      console.log('Received new game state:', gameState);
+      prevGameStateRef.current = gameState;
+    }
+  }, [gameState]);
 
   useEffect(() => {
     let newSocket: Socket;
@@ -91,9 +118,15 @@ const useWebSocket = (playerId: string, playerName: string) => {
       setRecentGameEvent(gameEvent);
     });
 
-    newSocket.on('gameOver', (winner: string) => {
-      console.log(`Game over! Winner: ${winner}`);
-      setWinner(winner);
+    // newSocket.on('gameOver', (winner: string) => {
+    //   console.log(`Game over! Winner: ${winner}`);
+    //   setWinner(winner);
+    // });
+
+    newSocket.on('gameStart', (data: { gameId: string; players: PlayerIdAndName[] }) => {
+      resetState();
+      console.log(`Game '${data.gameId}' started!`);
+      setConnectedPlayers(data.players);
     });
 
     newSocket.on('requestMakeMove', (data: EmittedMakeMoveRequest) => {
@@ -152,6 +185,11 @@ const useWebSocket = (playerId: string, playerName: string) => {
     newSocket.on('currentRoundGameEvents', (events: GameEvent[]) => {
       console.log('Current round game events:', events);
       setCurrentRoundGameEvents(events);
+    });
+
+    newSocket.on('playAgainVotes', (votes: string[]) => {
+      console.log('Play again votes:', votes);
+      setPlayAgainVotes(votes);
     });
 
     setSocket(newSocket);
@@ -228,6 +266,15 @@ const useWebSocket = (playerId: string, playerName: string) => {
     socket.emit('startGame');
   };
 
+  const playAgain = () => {
+    if (!socket) {
+      console.error('Socket is not connected. Cannot send play again request.');
+      return;
+    }
+    console.log('Sending play again request');
+    socket.emit('playAgain');
+  };
+
   // whenever socket changes, log debug info
   useEffect(() => {
     console.debug('Socket changed:', socket);
@@ -252,6 +299,8 @@ const useWebSocket = (playerId: string, playerName: string) => {
     discard,
     continueGame,
     currentRoundGameEvents,
+    playAgain,
+    playAgainVotes,
   };
 };
 
