@@ -134,10 +134,17 @@ const GameScreen: React.FC<GameScreenProps> = ({
     // when done in parallel
     // this just covers the case when we are waiting for all players to "continue" to end the round
     let playerName = null;
+    // continue request after counting phase to end round
     if (gameState?.currentPhase === Phase.COUNTING && waitingOnPlayerInfo.waitingFor === AgentDecisionType.PLAY_CARD) {
       // use the requestedDecisionData to get the player name since it is more recent
       playerName = connectedPlayers.find(player => player.id === requestedDecisionData.playerId)?.name;
-    } else { // the normal case:
+    }
+    // other continue request between pegging and counting phase
+    else if (gameState?.currentPhase === Phase.PEGGING && waitingOnPlayerInfo.waitingFor === AgentDecisionType.PLAY_CARD) {
+      playerName = connectedPlayers.find(player => player.id === requestedDecisionData.playerId)?.name;
+    }
+    // the normal case:
+    else {
       playerName = connectedPlayers.find(player => player.id === waitingOnPlayerInfo.playerId)?.name;
     }
     if (!playerName) {
