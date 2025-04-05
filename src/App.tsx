@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import useWebSocket from './hooks/useWebSocket';
-import { PlayerIdAndName } from 'cribbage-core/src/types';
+import { PlayerIdAndName } from 'cribbage-core';
 import HomeScreen from './HomeScreen';
 import GameScreen from './GameScreen';
 
@@ -73,7 +73,7 @@ function App() {
 
   return (
     <div className="App has-background-grey-dark">
-      {yourPlayerInfo && opponentPlayerInfo ? (
+      {gameState ? (
         <GameScreen
           username={username}
           gameState={gameState}

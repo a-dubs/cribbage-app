@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from 'cribbage-core/src/types';
+import { Card } from 'cribbage-core';
 import './PlayingCard.css';
 
 const cardNameMap: { [key: string]: string } = {
@@ -150,7 +150,7 @@ export interface CardStackProps {
 
 export const CardStack: React.FC<CardStackProps> = ({
   items,
-  offset = 30,
+  offset = 40,
   hoverAnimation = false,
 }) => {
   return (

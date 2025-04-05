@@ -11,7 +11,7 @@
 }
 .playing-card img {
     width: 100%;
-    height: 6em;
+    height: 7em;
     margin: auto;
     mouse-events: none;
     margin-top: 2px;
@@ -58,9 +58,14 @@ img {
     margin: 20px auto;
     border: none
 }
-.cards-in-play.is-hand, .hand {
-    border-top: 2px solid white;
+
+.player-area.opponent .cards-in-play.is-hand, .player-area.opponent .hand {
+    /* border-top: 2px solid white; */
     border-bottom: 2px solid white;
+}
+.player-area.you .cards-in-play.is-hand, .player-area.you .hand {
+    border-top: 2px solid white;
+    /* border-bottom: 2px solid white; */
 }
 
 .playing-card.selected {
@@ -79,7 +84,7 @@ img {
 .card-stack {
     position: relative;
     width: 100%;
-    height: 7em;
+    height: 7.5em;
     display: inline-block;
     margin-bottom: 1em;
 }

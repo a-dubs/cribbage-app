@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import LoginForm from './components/Forms/LoginForm';
 import { StartGameForm } from './components/Forms/StartGameForm';
-import { PlayerIdAndName } from 'cribbage-core/src/types';
+import { PlayerIdAndName } from 'cribbage-core';
 import { MAX_PLAYERS } from './constants';
 
 
@@ -44,18 +44,19 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ name, username, onFormSubmit, h
   // indicate which player is you
   // show a total at the top like (1/2) to indicate how many players are connected
   const connectedPlayersComponent = (
-    <div className='columns mt-6 ml-6'> 
-      <div className="connected-players-component card column is-4">
+    <div className='columns mt-6'> 
+      <div className="connected-players-component card column is-4 is-offset-4">
         <header className="card-header">
-          <p className="card-header-title has-text-white">
+          
+        </header>
+        <div className="card-content">
+          <p className="has-text-white is-size-4 has-text-centered mb-4 has-text-weight-bold">
             Connected Players
             {` (${connectedPlayers.length}/${MAX_PLAYERS})`}
           </p>
-        </header>
-        <div className="card-content">
           <div className="content connected-players-list">
             {connectedPlayers.map(player => (
-              <div key={player.id} className="connected-player-list-item">
+              <div key={player.id} className="connected-player-list-item is-size-5">
                 {player.id === username ? <strong>{player.name} (You)</strong> : player.name}
               </div>
             ))}
@@ -69,7 +70,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ name, username, onFormSubmit, h
     <div className="HomeScreen">
       <div>
         <div className=''>
-          <h1 className="is-size-2 has-text-white has-text-weight-light">Cribbage</h1>
+          <h1 className="is-size-1 has-text-white has-text-weight-light mt-4">Cribbage</h1>
         </div>
         <div className='py-2'>
           <h2 className="is-size-4 has-text-white has-text-weight-light">
@@ -87,6 +88,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ name, username, onFormSubmit, h
             name={name}
             username={username}
             onSubmit={onFormSubmit}
+            connectedPlayers={connectedPlayers}
           />
         )
       }
