@@ -73,6 +73,7 @@ function App() {
 
   return (
     <div
+      data-theme="dark"
       className="App"
       style={{backgroundColor: '#35654d'}}
     >
