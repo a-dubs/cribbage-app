@@ -20,6 +20,7 @@ function App() {
   // const [username, setUsername] = useState('dev-1');
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
+  const [lobbyId, setLobbyId] = useState('');
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [yourPlayerInfo, setYourPlayerInfo] = useState<PlayerIdAndName | null>(null);
   const [opponentPlayerInfo, setOpponentPlayerInfo] = useState<PlayerIdAndName | null>(null);
@@ -44,7 +45,18 @@ function App() {
     currentRoundGameEvents,
     playAgain,
     playAgainVotes,
+    joinLobby,
+    checkReconnect,
   } = useWebSocket(username, name);
+
+  useEffect(() => {
+    if (username) {
+      checkReconnect(username, (foundLobbyId) => {
+        setLobbyId(foundLobbyId);
+        joinLobby(username, foundLobbyId);
+      });
+    }
+  }, [checkReconnect, joinLobby, username]);
 
   useEffect(() => {
     if (connectedPlayers) {

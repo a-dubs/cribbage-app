@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { GameState, GameEvent, EmittedMakeMoveRequest, EmittedDiscardRequest, Card, EmittedWaitingForPlayer, EmittedDiscardResponse, EmittedMakeMoveResponse, PlayerIdAndName, AgentDecisionType, EmittedDecisionRequest, Phase, ActionType } from 'cribbage-core/';
+import { GameState, GameEvent, EmittedMakeMoveRequest, EmittedDiscardRequest, Card, EmittedWaitingForPlayer, EmittedDiscardResponse, EmittedMakeMoveResponse, PlayerIdAndName, AgentDecisionType, EmittedDecisionRequest, ActionType } from 'cribbage-core/';
 import { EmittedContinueResponse } from 'cribbage-core';
 
 localStorage.debug = 'socket.io-client:socket';
@@ -12,6 +12,7 @@ if (!apiUrl) {
 
 const useWebSocket = (playerId: string, playerName: string) => {
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [lobbyId, setLobbyId] = useState<string | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [recentGameEvent, setRecentGameEvent] = useState<GameEvent | null>(null);
   const [waitingOnPlayerInfo, setWaitingOnPlayerInfo] = useState<EmittedWaitingForPlayer | null>(null);
@@ -80,6 +81,30 @@ const useWebSocket = (playerId: string, playerName: string) => {
       prevGameStateRef.current = gameState;
     }
   }, [gameState]);
+
+  const joinLobby = (playerId: string, lobbyId: string) => {
+    if (!socket) return console.error('Socket not connected');
+    setLobbyId(lobbyId);
+    socket.emit('joinLobby', { playerId, lobbyId });
+  };
+
+  const checkReconnect = (playerId: string, onFoundLobby: (lobbyId: string) => void) => {
+    if (!socket) return console.error('Socket not connected');
+    socket.emit('checkReconnect', playerId);
+    socket.once('reconnectInfo', ({ lobbyId }) => {
+      if (lobbyId) {
+        console.log('Auto-reconnecting to lobby:', lobbyId);
+        setLobbyId(lobbyId);
+        onFoundLobby(lobbyId);
+      }
+    });
+  };
+
+  const leaveLobby = () => {
+    if (!socket) return console.error('Socket not connected');
+    socket.emit('leaveLobby');
+    setLobbyId(null);
+  };
 
   useEffect(() => {
     let newSocket: Socket;
@@ -192,25 +217,17 @@ const useWebSocket = (playerId: string, playerName: string) => {
       setPlayAgainVotes(votes);
     });
 
+    newSocket.on('playerDisconnected', ({ playerId }) => {
+      console.log('Player disconnected:', playerId);
+    });
+
+    newSocket.on('activeLobbies', ({ lobbyIds }) => {
+      console.log('Active lobbies:', lobbyIds);
+    });
+
     setSocket(newSocket);
 
-    // return () => {
-    //   console.log('Closing socket connection');
-    //   newSocket.close();
-    // };
   }, [playerId, playerName, socket]); 
-
-  // // send heartbeat to server every 5 seconds
-  // useEffect(() => {
-  //   const heartbeatInterval = setInterval(() => {
-  //     console.log('Sending heartbeat');
-  //     socket?.emit('heartbeat');
-  //   }, 5000);
-
-  //   return () => {
-  //     clearInterval(heartbeatInterval);
-  //   };
-  // }, [socket]);
 
 
   const makeMove = (card: Card | null): void => {
@@ -301,6 +318,10 @@ const useWebSocket = (playerId: string, playerName: string) => {
     currentRoundGameEvents,
     playAgain,
     playAgainVotes,
+    lobbyId,
+    joinLobby,
+    checkReconnect,
+    leaveLobby,
   };
 };
 
